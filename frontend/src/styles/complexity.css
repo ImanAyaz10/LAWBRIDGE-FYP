@@ -1,0 +1,39 @@
+.complexity-container {
+  padding: 40px;
+  text-align: center;
+}
+
+.complexity-form {
+  display: flex;
+  flex-direction: column;
+  max-width: 500px;
+  margin: auto;
+}
+
+.complexity-form label {
+  margin-top: 15px;
+  font-weight: bold;
+}
+
+.complexity-form textarea {
+  height: 120px;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.complexity-form button {
+  margin-top: 20px;
+  padding: 12px;
+  background-color: #0b2c5f;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.result {
+  margin-top: 20px;
+  color: #0b2c5f;
+}

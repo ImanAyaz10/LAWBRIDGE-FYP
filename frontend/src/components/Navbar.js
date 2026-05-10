@@ -1,0 +1,59 @@
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+
+const Navbar = () => {
+  const [scrolled, setScrolled] = useState(false);
+  const location = useLocation();
+  const isHomePage = location.pathname === "/";
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const navBgColor = (!isHomePage || scrolled) ? 'bg-[#064e3b] shadow-2xl py-4' : 'bg-transparent py-6';
+  const textColor = 'text-white'; 
+
+  return (
+    <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${navBgColor}`}>
+      <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+        
+        {/* Logo & Headline */}
+        <Link to="/" className="flex items-center gap-4 group">
+          <div className="w-16 h-16 overflow-hidden rounded-xl bg-[#032b21] flex items-center justify-center p-1 shadow-lg border border-emerald-800">
+             <svg className="w-10 h-10 text-[#f1edd3] fill-none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.031.352 5.988 5.988 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.97zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0L2.62 15.696c-.122.499.106 1.028.589 1.202a5.988 5.988 0 012.031.352 5.988 5.988 0 012.031-.352c.483-.174.711-.703.59-1.202L5.25 4.97z" />
+             </svg>
+          </div>
+          <div className="flex flex-col border-l-2 border-emerald-400/30 pl-4">
+            <span className="text-2xl font-extrabold font-poppins tracking-tight text-[#f1edd3] leading-tight">
+              LawBridge
+            </span>
+            <span className="text-[10px] uppercase tracking-[0.2em] text-emerald-400 font-black">
+              Bridging Clients & Lawyers
+            </span>
+          </div>
+        </Link>
+
+        {/* Links */}
+        <div className="hidden md:flex space-x-10 items-center">
+          <Link to="/" className="text-white hover:text-emerald-400 font-semibold transition-colors">Home</Link>
+          <Link to="/about" className="text-white hover:text-emerald-400 font-semibold transition-colors">About</Link>
+          <Link to="/lawyers" className="text-white hover:text-emerald-400 font-semibold transition-colors">Lawyers</Link>
+          <Link to="/categories" className="text-white hover:text-emerald-400 font-semibold transition-colors">Categories</Link>
+          <Link to="/legal-documents" className="text-white hover:text-emerald-400 font-semibold transition-colors">Templates</Link>
+          <Link to="/contact" className="text-white hover:text-emerald-400 font-semibold transition-colors">Contact</Link>
+          
+          <Link to="/signup" className="bg-[#f1edd3] hover:bg-white text-[#064e3b] px-8 py-3 rounded-xl font-bold transition-all shadow-lg active:scale-95">
+            Get Started
+          </Link>
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+export default Navbar;

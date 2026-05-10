@@ -1,0 +1,38 @@
+.cost-container {
+  padding: 40px;
+  text-align: center;
+}
+
+.cost-form {
+  display: flex;
+  flex-direction: column;
+  max-width: 400px;
+  margin: auto;
+}
+
+.cost-form label {
+  margin-top: 15px;
+  font-weight: bold;
+}
+
+.cost-form select {
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.cost-form button {
+  margin-top: 20px;
+  padding: 12px;
+  background-color: #0b2c5f;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.result {
+  margin-top: 20px;
+  color: #0b2c5f;
+}

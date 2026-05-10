@@ -1,0 +1,245 @@
+/* NAVBAR */
+
+.navbar {
+
+  position: sticky;
+
+  top: 0;
+
+  z-index: 1000;
+
+  background: linear-gradient(
+    135deg,
+    #1E6B52,
+    #15543F
+  );
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+
+  color: white;
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  padding: 16px 48px;
+
+  transition: 0.3s;
+}
+
+/* LOGO */
+
+.logo {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+}
+
+.logo-icon {
+
+  font-size: 26px;
+
+  color: #ECFDF5; /* soft white-green */
+}
+
+.logo h2 {
+
+  margin: 0;
+
+  font-size: 24px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.5px;
+
+  color: #ECFDF5;
+}
+
+/* NAV LINKS */
+
+.nav-links {
+
+  list-style: none;
+
+  display: flex;
+
+  gap: 28px;
+}
+
+.nav-links a {
+
+  position: relative;
+
+  text-decoration: none;
+
+  color: #F9FAFB;
+
+  font-weight: 500;
+
+  font-size: 16px;
+
+  transition: 0.3s;
+}
+
+/* UNDERLINE ANIMATION */
+
+.nav-links a::after {
+
+  content: "";
+
+  position: absolute;
+
+  width: 0;
+
+  height: 2px;
+
+  left: 0;
+
+  bottom: -4px;
+
+  background-color: #A7F3D0;
+
+  transition: 0.3s;
+}
+
+.nav-links a:hover {
+
+  color: #D1FAE5;
+}
+
+.nav-links a:hover::after {
+
+  width: 100%;
+}
+
+/* BUTTON SECTION */
+
+.nav-buttons {
+
+  display: flex;
+
+  gap: 12px;
+}
+
+/* LOGIN BUTTON */
+
+.login-btn {
+
+  background: transparent;
+
+  color: #F9FAFB;
+
+  border: 1px solid rgba(255,255,255,0.4);
+
+  padding: 8px 18px;
+
+  border-radius: 8px;
+
+  cursor: pointer;
+
+  font-weight: 500;
+
+  transition: 0.3s;
+}
+
+.login-btn:hover {
+
+  background: rgba(255,255,255,0.15);
+
+  border-color: white;
+}
+
+/* GET STARTED BUTTON */
+
+.start-btn {
+
+  background: linear-gradient(
+    135deg,
+    #ECFDF5,
+    #D1FAE5
+  );
+
+  color: #15543F;
+
+  padding: 9px 20px;
+
+  border: none;
+
+  border-radius: 10px;
+
+  cursor: pointer;
+
+  font-weight: 600;
+
+  transition: 0.3s;
+
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.start-btn:hover {
+
+  transform: translateY(-1px);
+
+  box-shadow: 0 6px 14px rgba(0,0,0,0.2);
+}
+
+/* MOBILE RESPONSIVE */
+
+@media (max-width: 768px) {
+
+  .navbar {
+
+    padding: 14px 24px;
+  }
+
+  .nav-links {
+
+    gap: 18px;
+  }
+
+}
+.logo h2 {
+
+  margin: 0;
+
+  font-size: 26px;     /* thora bada */
+
+  font-weight: 800;    /* thora bhara */
+
+  letter-spacing: 0.8px;
+
+  color: #ECFDF5;
+}
+.nav-links a {
+
+  position: relative;
+
+  text-decoration: none;
+
+  color: #F9FAFB;
+
+  font-weight: 600;   /* 500 → 600 */
+
+  font-size: 17px;    /* thora bada */
+
+  letter-spacing: 0.3px;
+
+  transition: 0.3s;
+}
+.login-btn {
+
+  font-weight: 600;   /* thora bhara */
+}
+
+.start-btn {
+
+  font-weight: 700;   /* zyada prominent */
+}
