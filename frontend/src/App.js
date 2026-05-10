@@ -4,6 +4,9 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { AuthProvider } from "./context/AuthContext";
+import { LanguageProvider } from "./context/LanguageContext";
 
 import EmergencyHelp from "./pages/EmergencyHelp";
 import Home from "./pages/Home";
@@ -35,9 +38,11 @@ import LegalDocuments from "./pages/LegalDocuments";
 
 function App() {
   return (
-    <Router>
-      <ScrollToTop />
-      <div className="flex flex-col min-h-screen">
+    <AuthProvider>
+      <LanguageProvider>
+        <Router>
+          <ScrollToTop />
+          <div className="flex flex-col min-h-screen">
         <Navbar />
         <main className="flex-grow">
           <Routes>
@@ -46,7 +51,11 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/lawyers" element={<FindLawyer />} />
             <Route path="/profile/:id" element={<LawyerProfile />} />
-            <Route path="/lawyer-dashboard" element={<LawyerDashboard />} />
+            <Route path="/lawyer-dashboard" element={
+              <ProtectedRoute allowedRoles={['lawyer']}>
+                <LawyerDashboard />
+              </ProtectedRoute>
+            } />
             <Route path="/book-appointment/:id" element={<BookAppointment />} />
             <Route path="/chat" element={<AIChat />} />
             <Route path="/ai-assistant" element={<AIAssistant />} />
@@ -57,9 +66,21 @@ function App() {
             <Route path="/case-visibility" element={<CaseScoreboard />} />
             <Route path="/contact-finder" element={<ContactFinder />} />
             <Route path="/emergency-help" element={<EmergencyHelp />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/user-dashboard" element={<UserDashboard />} />
-            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/user-dashboard" element={
+              <ProtectedRoute allowedRoles={['client']}>
+                <UserDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
             <Route path="/documents" element={<Documents />} />
             <Route path="/legal-documents" element={<LegalDocuments />} />
             <Route path="/categories" element={<Categories />} />
@@ -72,7 +93,8 @@ function App() {
         <Footer />
       </div>
     </Router>
-
+    </LanguageProvider>
+    </AuthProvider>
   );
 }
 

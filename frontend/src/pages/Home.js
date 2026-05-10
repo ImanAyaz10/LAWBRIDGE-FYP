@@ -159,6 +159,76 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* About Section */}
+      <section className="py-32 bg-slate-50 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-emerald-100 rounded-full blur-[100px] opacity-50 -mr-96 -mt-96 pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[#032b21]/5 rounded-full blur-[80px] -ml-64 -mb-64 pointer-events-none"></div>
+        
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <div className="flex flex-col lg:flex-row items-center gap-20">
+            <div className="lg:w-1/2">
+              <FadeInScroll>
+                <div className="flex items-center gap-3 mb-8">
+                  <div className="h-1 w-12 bg-emerald-600 rounded-full"></div>
+                  <span className="text-emerald-600 font-bold tracking-[0.2em] uppercase text-sm">About LawBridge</span>
+                </div>
+                <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-8 font-poppins leading-tight tracking-tight">
+                  Democratizing Legal Access in Pakistan
+                </h2>
+                <p className="text-slate-600 text-lg leading-relaxed mb-6 font-medium">
+                  Navigating the legal landscape can be intimidating and complex. LawBridge was founded with a singular vision: to bridge the gap between citizens and justice through technology. 
+                </p>
+                <p className="text-slate-600 text-lg leading-relaxed mb-10">
+                  By integrating advanced AI case analysis with a network of Pakistan's most respected legal minds, we empower you to make informed decisions, estimate costs transparently, and find the right representation instantly.
+                </p>
+                
+                <div className="grid grid-cols-2 gap-10 mb-12">
+                  <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                    <h4 className="text-4xl font-black text-[#0f4c3a] font-poppins mb-2">98%</h4>
+                    <p className="text-slate-500 font-bold text-xs uppercase tracking-widest">Client Satisfaction</p>
+                  </div>
+                  <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                    <h4 className="text-4xl font-black text-[#0f4c3a] font-poppins mb-2">24/7</h4>
+                    <p className="text-slate-500 font-bold text-xs uppercase tracking-widest">AI Legal Support</p>
+                  </div>
+                </div>
+                
+                <Link to="/about">
+                   <button className="bg-[#0f4c3a] text-white px-10 py-4 rounded-xl font-bold hover:bg-emerald-800 transition-all shadow-xl shadow-[#0f4c3a]/20 active:scale-95 text-lg">
+                     Read Our Full Story
+                   </button>
+                </Link>
+              </FadeInScroll>
+            </div>
+            
+            <div className="lg:w-1/2">
+              <FadeInScroll delay={0.2}>
+                 <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-tr from-emerald-600 to-[#c0a062] rounded-[3rem] transform rotate-3 scale-105 opacity-20 blur-2xl"></div>
+                    <img 
+                      src="/about-legal.jpg" 
+                      alt="Legal Library" 
+                      className="relative z-10 w-full h-[650px] object-cover rounded-[3rem] shadow-2xl border-[8px] border-white"
+                    />
+                    
+                    {/* Floating Trust Badge */}
+                    <div className="absolute -bottom-8 -left-8 bg-white p-6 pr-8 rounded-3xl shadow-2xl z-20 border border-slate-100 hidden md:flex items-center gap-5">
+                       <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 shadow-inner">
+                          <ShieldCheck size={32} />
+                       </div>
+                       <div>
+                          <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mb-1">Trusted By</p>
+                          <h4 className="text-2xl font-black text-slate-800 font-poppins">500+ Lawyers</h4>
+                       </div>
+                    </div>
+                 </div>
+              </FadeInScroll>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </PageTransition>
   );
 };

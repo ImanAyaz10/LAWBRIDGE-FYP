@@ -38,60 +38,54 @@ const analyzeCase = async (req, res) => {
     const { description } = req.body;
 
     if (!description) {
-        return res.status(400).json({ message: 'Please provide a case description' });
+        res.status(400);
+        throw new Error('Please provide a case description');
     }
 
-    try {
-        const analysis = analyzeLegalProblem(description);
+    const analysis = analyzeLegalProblem(description);
 
-        const newCase = await Case.create({
-            userId: req.user._id, // Assumes auth middleware populates req.user
-            description,
-            caseType: analysis.caseType,
-            complexity: analysis.complexity,
-            estimatedTime: analysis.time,
-            suggestion: analysis.suggestion,
-            score: analysis.score,
-            jurisdiction: analysis.jurisdiction,
-        });
+    const newCase = await Case.create({
+        userId: req.user._id, // Assumes auth middleware populates req.user
+        description,
+        caseType: analysis.caseType,
+        complexity: analysis.complexity,
+        estimatedTime: analysis.time,
+        suggestion: analysis.suggestion,
+        score: analysis.score,
+        jurisdiction: analysis.jurisdiction,
+    });
 
-        res.status(201).json(newCase);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
+    res.status(201).json(newCase);
 };
 
 // @desc    Generate legal roadmap
 // @route   POST /api/case/roadmap/:id
 // @access  Private
 const generateRoadmap = async (req, res) => {
-    try {
-        const legalCase = await Case.findById(req.params.id);
+    const legalCase = await Case.findById(req.params.id);
 
-        if (!legalCase) {
-            return res.status(404).json({ message: 'Case not found' });
-        }
-
-        // Mock roadmap based on case type
-        let roadmap = [
-            { step: 1, title: 'Document Collection', description: 'Gather all relevant identity and legal documents.' },
-            { step: 2, title: 'Initial Consultation', description: 'Discuss the case details with a specialized lawyer.' },
-        ];
-
-        if (legalCase.caseType === 'Property Law') {
-            roadmap.push({ step: 3, title: 'Legal Notice', description: 'Send a formal legal notice to the other party.' });
-            roadmap.push({ step: 4, title: 'Filing', description: 'File the case in the District Court.' });
-        } else {
-            roadmap.push({ step: 3, title: 'Formal Filing', description: 'Prepare and file the necessary legal petitions.' });
-        }
-
-        legalCase.roadmap = roadmap;
-        await legalCase.save();
-
-        res.json(legalCase);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    if (!legalCase) {
+        res.status(404);
+        throw new Error('Case not found');
     }
+
+    // Mock roadmap based on case type
+    let roadmap = [
+        { step: 1, title: 'Document Collection', description: 'Gather all relevant identity and legal documents.' },
+        { step: 2, title: 'Initial Consultation', description: 'Discuss the case details with a specialized lawyer.' },
+    ];
+
+    if (legalCase.caseType === 'Property Law') {
+        roadmap.push({ step: 3, title: 'Legal Notice', description: 'Send a formal legal notice to the other party.' });
+        roadmap.push({ step: 4, title: 'Filing', description: 'File the case in the District Court.' });
+    } else {
+        roadmap.push({ step: 3, title: 'Formal Filing', description: 'Prepare and file the necessary legal petitions.' });
+    }
+
+    legalCase.roadmap = roadmap;
+    await legalCase.save();
+
+    res.json(legalCase);
 };
 
 module.exports = {

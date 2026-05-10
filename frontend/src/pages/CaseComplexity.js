@@ -2,30 +2,36 @@ import React, { useState } from "react";
 import PageTransition from "../components/animations/PageTransition";
 import PageHeader from "../components/PageHeader";
 import { BrainCircuit, Loader2, ShieldCheck, AlertCircle } from "lucide-react";
+import API from "../services/api";
 
 function CaseComplexity() {
   const [details, setDetails] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
 
-  const checkComplexity = () => {
+  const checkComplexity = async () => {
     if (details.length < 20) return;
     setLoading(true);
     setResult(null);
+    setError(null);
 
-    // Simulating AI Analysis
-    setTimeout(() => {
-      let analysis = {};
-      if (details.length < 100) {
-        analysis = { status: "Low", color: "text-emerald-500", score: "2/10", desc: "Simple administrative or civil matter. Most likely solvable via mediation." };
-      } else if (details.length < 300) {
-        analysis = { status: "Medium", color: "text-blue-500", score: "6/10", desc: "Requires detailed investigation and multiple court hearings. Moderate legal density." };
-      } else {
-        analysis = { status: "High", color: "text-red-500", score: "9/10", desc: "Complex constitutional or criminal matter involving multiple parties and deep legal research." };
-      }
-      setResult(analysis);
+    try {
+      const response = await API.post('/case/analyze', { description: details });
+      const data = response.data;
+      
+      setResult({
+        status: data.complexity,
+        color: data.complexity === 'High' || data.complexity === 'Complex' ? 'text-red-500' : 'text-emerald-500',
+        score: `${data.score}/100`,
+        desc: data.suggestion
+      });
+    } catch (err) {
+      console.error(err);
+      setError("Failed to analyze case. Please make sure you are logged in.");
+    } finally {
       setLoading(false);
-    }, 2500);
+    }
   };
 
   return (
@@ -43,6 +49,8 @@ function CaseComplexity() {
 
           <h3 className="text-2xl font-bold text-slate-800 mb-8 font-poppins relative z-10">Describe Your Case</h3>
           <p className="text-slate-400 mb-6 font-medium text-sm">Please provide as much detail as possible for accurate AI analysis.</p>
+
+          {error && <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-xl border border-red-200">{error}</div>}
 
           <textarea
             className="w-full h-64 p-8 rounded-[2rem] bg-slate-50 border-2 border-slate-100 outline-none focus:border-emerald-500 transition-all font-medium text-slate-700 mb-8"

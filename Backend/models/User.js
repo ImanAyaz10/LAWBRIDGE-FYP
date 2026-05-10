@@ -23,8 +23,8 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['user', 'lawyer'],
-        default: 'user',
+        enum: ['client', 'user', 'lawyer', 'admin'],
+        default: 'client',
     },
     specialization: String, // For lawyers
     city: String, // For lawyers

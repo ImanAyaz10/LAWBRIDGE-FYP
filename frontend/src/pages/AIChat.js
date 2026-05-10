@@ -141,6 +141,14 @@ function AIChatAssistant() {
             <div ref={messagesEndRef} />
           </div>
 
+          {/* AI Legal Disclaimer */}
+          <div className="bg-orange-50 border-y border-orange-100 p-3 px-6 flex items-center gap-3">
+             <AlertCircle size={16} className="text-orange-500 flex-shrink-0" />
+             <p className="text-xs text-orange-800 font-medium">
+               <strong>Disclaimer:</strong> This AI assistant provides general legal information based on Pakistan law, not official legal advice. Always consult a qualified attorney before taking legal action.
+             </p>
+          </div>
+
           {/* Chat Input */}
           <div className="p-6 bg-white border-t border-slate-100 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.05)]">
             <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide no-scrollbar">

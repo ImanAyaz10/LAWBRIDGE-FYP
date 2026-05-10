@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
+  const { user, token, logout } = useAuth();
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const isHomePage = location.pathname === "/";
@@ -47,9 +50,29 @@ const Navbar = () => {
           <Link to="/legal-documents" className="text-white hover:text-emerald-400 font-semibold transition-colors">Templates</Link>
           <Link to="/contact" className="text-white hover:text-emerald-400 font-semibold transition-colors">Contact</Link>
           
-          <Link to="/signup" className="bg-[#f1edd3] hover:bg-white text-[#064e3b] px-8 py-3 rounded-xl font-bold transition-all shadow-lg active:scale-95">
-            Get Started
-          </Link>
+          {token ? (
+            <>
+              {user?.role === 'lawyer' && (
+                <Link to="/lawyer-dashboard" className="text-white hover:text-emerald-400 font-semibold transition-colors">Dashboard</Link>
+              )}
+              {user?.role === 'client' && (
+                <Link to="/user-dashboard" className="text-white hover:text-emerald-400 font-semibold transition-colors">Dashboard</Link>
+              )}
+              {user?.role === 'admin' && (
+                <Link to="/admin" className="text-white hover:text-emerald-400 font-semibold transition-colors">Admin</Link>
+              )}
+              <button 
+                onClick={() => { logout(); navigate('/'); }} 
+                className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-xl font-bold transition-all shadow-lg active:scale-95"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <Link to="/login" className="bg-[#f1edd3] hover:bg-white text-[#064e3b] px-8 py-3 rounded-xl font-bold transition-all shadow-lg active:scale-95">
+              Get Started
+            </Link>
+          )}
         </div>
       </div>
     </nav>

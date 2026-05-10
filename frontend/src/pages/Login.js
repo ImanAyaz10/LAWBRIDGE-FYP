@@ -3,9 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import "../styles/login.css";
 import PageTransition from "../components/animations/PageTransition";
 import API from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
 function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: ""
@@ -25,8 +27,8 @@ function Login() {
     try {
       const response = await API.post("/auth/login", formData);
 
-      // Save token and user info
-      localStorage.setItem("token", response.data.token);
+      // Save token and user info in Context
+      login(response.data.token, response.data);
       localStorage.setItem("userInfo", JSON.stringify(response.data));
 
       // Redirect based on role

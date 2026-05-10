@@ -30,46 +30,39 @@ const sendMessage = async (req, res) => {
     const { content } = req.body;
 
     if (!content) {
-        return res.status(400).json({ message: 'Please provide message content' });
+        res.status(400);
+        throw new Error('Please provide message content');
     }
 
-    try {
-        // 1. Save User Message
-        const userChat = await Message.create({
-            senderId: req.user._id,
-            role: 'user',
-            content: content
-        });
+    // 1. Save User Message
+    const userChat = await Message.create({
+        senderId: req.user._id,
+        role: 'user',
+        content: content
+    });
 
-        // 2. Generate AI Response
-        const aiContent = generateAIResponse(content);
+    // 2. Generate AI Response
+    const aiContent = generateAIResponse(content);
 
-        // 3. Save AI Response
-        const aiChat = await Message.create({
-            senderId: req.user._id, // For AI chat, we'll mark AI responses associated with the user
-            role: 'assistant',
-            content: aiContent
-        });
+    // 3. Save AI Response
+    const aiChat = await Message.create({
+        senderId: req.user._id, // For AI chat, we'll mark AI responses associated with the user
+        role: 'assistant',
+        content: aiContent
+    });
 
-        res.status(201).json({
-            userMessage: userChat,
-            aiMessage: aiChat
-        });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
+    res.status(201).json({
+        userMessage: userChat,
+        aiMessage: aiChat
+    });
 };
 
 // @desc    Get chat history
 // @route   GET /api/chat/history
 // @access  Private
 const getChatHistory = async (req, res) => {
-    try {
-        const history = await Message.find({ senderId: req.user._id, role: { $in: ['user', 'assistant'] } }).sort({ createdAt: 1 });
-        res.json(history);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
+    const history = await Message.find({ senderId: req.user._id, role: { $in: ['user', 'assistant'] } }).sort({ createdAt: 1 });
+    res.json(history);
 };
 
 module.exports = {
