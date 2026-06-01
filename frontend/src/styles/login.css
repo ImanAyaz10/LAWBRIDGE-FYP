@@ -1,22 +1,16 @@
 /* LOGIN PAGE */
 
 .login-container {
-
-  height: 100vh;
-
+  min-height: 100vh;
   display: flex;
-
   justify-content: center;
-
   align-items: center;
-
   background: linear-gradient(
     135deg,
     #F4F6F8,
     #E8F0ED
   );
-
-  padding: 20px;
+  padding: 140px 20px 60px;
 }
 
 /* LOGIN BOX */

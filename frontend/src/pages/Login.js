@@ -4,6 +4,7 @@ import "../styles/login.css";
 import PageTransition from "../components/animations/PageTransition";
 import API from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { Eye, EyeOff } from "lucide-react";
 
 function Login() {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ function Login() {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -54,7 +56,7 @@ function Login() {
 
           {error && <div className="error-message">{error}</div>}
 
-          <form onSubmit={handleLogin}>
+          <form onSubmit={handleLogin} className="flex flex-col gap-4">
             <input
               type="email"
               name="email"
@@ -64,14 +66,25 @@ function Login() {
               onChange={handleChange}
             />
 
-            <input
-              type="password"
-              name="password"
-              placeholder="Enter your password"
-              required
-              value={formData.password}
-              onChange={handleChange}
-            />
+            <div className="relative flex items-center w-full">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Enter your password"
+                required
+                value={formData.password}
+                onChange={handleChange}
+                className="w-full pr-12"
+                style={{ width: "100%", boxSizing: "border-box" }}
+              />
+              <span
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 text-slate-400 hover:text-[#1e6b52] transition-colors cursor-pointer flex items-center"
+                style={{ padding: 0, margin: 0 }}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </span>
+            </div>
 
             <button type="submit" className="primary-btn" disabled={loading}>
               {loading ? "Logging in..." : "Login"}

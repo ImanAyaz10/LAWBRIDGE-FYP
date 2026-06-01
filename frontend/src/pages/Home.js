@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Scale, ShieldCheck, Home as HomeIcon, Briefcase, Globe, Fingerprint, Star, Sparkles } from 'lucide-react';
 import { useNavigate, Link } from "react-router-dom";
 import lawVideo from "../assets/law-bg.mp4";
+
 import PageTransition from "../components/animations/PageTransition";
 import FadeInScroll from "../components/animations/FadeInScroll";
 
@@ -96,8 +97,8 @@ const Home = () => {
             {categories.map((cat, idx) => (
               <FadeInScroll key={idx} delay={idx * 0.1}>
                 <Link to="/categories">
-                  <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:bg-emerald-600 hover:shadow-xl hover:shadow-emerald-500/20 hover:-translate-y-2 transition-all duration-300 group cursor-pointer text-center md:text-left h-full">
-                    <div className="w-14 h-14 bg-emerald-50 rounded-xl flex items-center justify-center mb-6 mx-auto md:mx-0 group-hover:bg-white/20 transition-colors duration-300">
+                  <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:bg-emerald-600 hover:shadow-xl hover:shadow-emerald-500/20 hover:-translate-y-2 transition-all duration-300 group cursor-pointer text-center h-full">
+                    <div className="w-14 h-14 bg-emerald-50 rounded-xl flex items-center justify-center mb-6 mx-auto group-hover:bg-white/20 transition-colors duration-300">
                       {cat.icon}
                     </div>
                     <h3 className="text-xl font-bold mb-2 text-slate-800 group-hover:text-white transition-colors uppercase tracking-tight">{cat.title}</h3>
@@ -127,14 +128,18 @@ const Home = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {[
-              { name: "Ali Khan", specialty: "Family Lawyer", img: "1603415526960-f7e0328f1f0b", rating: 4.9 },
-              { name: "Sara Ahmed", specialty: "Criminal Lawyer", img: "1544723795-3fb6469f5b39", rating: 4.8 },
-              { name: "Usman Malik", specialty: "Property Lawyer", img: "1556157382-97eda2f9e2bf", rating: 4.7 }
+              { name: "Ali Khan", specialty: "Family Lawyer", img: "/images/WhatsApp Image 2026-06-02 at 12.07.51 AM (1).jpeg", rating: 4.9 },
+              { name: "Sara Ahmed", specialty: "Criminal Lawyer", img: "/images/WhatsApp Image 2026-06-02 at 12.07.52 AM.jpeg", rating: 4.8 },
+              { name: "Usman Malik", specialty: "Property Lawyer", img: "/images/WhatsApp Image 2026-06-02 at 12.07.50 AM.jpeg", rating: 4.7 }
             ].map((lawyer, idx) => (
               <FadeInScroll key={idx} delay={idx * 0.1}>
                 <div className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-lg hover:shadow-2xl transition-all group">
                   <div className="relative h-64 overflow-hidden">
-                    <img src={`https://images.unsplash.com/photo-${lawyer.img}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={lawyer.name} />
+                    <img 
+                      src={lawyer.img.startsWith('/') ? lawyer.img : `https://images.unsplash.com/photo-${lawyer.img}`} 
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                      alt={lawyer.name} 
+                    />
                     <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full flex items-center gap-1 shadow-md">
                       <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                       <span className="text-sm font-bold text-slate-700">{lawyer.rating}</span>

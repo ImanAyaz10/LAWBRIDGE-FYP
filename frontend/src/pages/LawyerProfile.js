@@ -45,11 +45,11 @@ function LawyerProfile() {
         subtitle="Detailed information and legal expertise of our verified partner." 
       />
 
-      <div className="max-w-6xl mx-auto px-6 py-12">
-        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 flex flex-col md:flex-row -mt-24 relative z-10">
+      <div className="max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-12">
+        <div className="bg-white rounded-2xl md:rounded-3xl shadow-2xl overflow-hidden border border-slate-100 flex flex-col md:flex-row -mt-12 md:-mt-24 relative z-10">
           
           {/* Left Side: Photo & Quick Stats */}
-          <div className="md:w-1/3 bg-slate-50 p-10 border-r border-slate-100 flex flex-col items-center">
+          <div className="md:w-1/3 bg-slate-50 p-6 md:p-10 border-r border-slate-100 flex flex-col items-center">
             <div className="relative mb-6">
               <div className="w-48 h-48 rounded-2xl bg-slate-200 flex items-center justify-center border-4 border-white shadow-2xl overflow-hidden">
                 {lawyer.profileImage ? (
@@ -86,7 +86,7 @@ function LawyerProfile() {
           </div>
 
           {/* Right Side: Detailed Bio & Info */}
-          <div className="md:w-2/3 p-12">
+          <div className="md:w-2/3 p-6 md:p-12">
             <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
               <Award className="text-emerald-600" /> Professional Background
             </h3>
@@ -124,6 +124,18 @@ function LawyerProfile() {
                   <p className="text-slate-800 font-semibold">Mon - Sat (9am - 6pm)</p>
                 </div>
               </div>
+
+              {lawyer.licenseNumber && (
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600">
+                    <Award size={20} />
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-400 font-bold uppercase">License ID</p>
+                    <p className="text-slate-800 font-semibold">{lawyer.licenseNumber}</p>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="border-t border-slate-100 pt-8">

@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -35,6 +35,101 @@ import Categories from "./pages/Categories";
 import FamilyLawyers from "./pages/FamilyLawyers";
 import RecommendedLawyers from "./pages/RecommendedLawyers";
 import LegalDocuments from "./pages/LegalDocuments";
+import Profile from "./pages/Profile";
+import ClientAppointments from "./pages/ClientAppointments";
+import LawyerAppointments from "./pages/LawyerAppointments";
+import LawyerMessages from "./pages/LawyerMessages";
+import LawyerClients from "./pages/LawyerClients";
+import LawyerEarnings from "./pages/LawyerEarnings";
+
+function AppContent() {
+  const location = useLocation();
+  const dashboardPaths = ["/user-dashboard", "/lawyer-dashboard", "/admin", "/profile", "/client-appointments", "/lawyer-appointments", "/lawyer-messages", "/lawyer-clients", "/lawyer-earnings"];
+  const isDashboard = dashboardPaths.some(path => location.pathname.startsWith(path));
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      {!isDashboard && <Navbar />}
+      <main className="flex-grow">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/lawyers" element={<FindLawyer />} />
+          <Route path="/lawyer/:id" element={<LawyerProfile />} />
+          <Route path="/lawyer-dashboard" element={
+            <ProtectedRoute allowedRoles={['lawyer']}>
+              <LawyerDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/book-appointment/:id" element={<BookAppointment />} />
+          <Route path="/chat" element={<AIChat />} />
+          <Route path="/ai-assistant" element={<AIAssistant />} />
+          <Route path="/case-complexity" element={<CaseComplexity />} />
+          <Route path="/cost-estimator" element={<CostEstimator />} />
+          <Route path="/legal-roadmap" element={<LegalRoadmap />} />
+          <Route path="/case-timeline" element={<CaseTimeline />} />
+          <Route path="/case-visibility" element={<CaseScoreboard />} />
+          <Route path="/contact-finder" element={<ContactFinder />} />
+          <Route path="/emergency-help" element={<EmergencyHelp />} />
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/user-dashboard" element={
+            <ProtectedRoute allowedRoles={['client']}>
+              <UserDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/profile" element={
+            <ProtectedRoute allowedRoles={['client', 'lawyer']}>
+              <Profile />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin" element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/documents" element={<Documents />} />
+          <Route path="/legal-documents" element={<LegalDocuments />} />
+          <Route path="/categories" element={<Categories />} />
+          <Route path="/family-lawyers" element={<FamilyLawyers />} />
+          <Route path="/recommended-lawyers" element={<RecommendedLawyers />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/client-appointments" element={
+            <ProtectedRoute allowedRoles={['client']}>
+              <ClientAppointments />
+            </ProtectedRoute>
+          } />
+          <Route path="/lawyer-appointments" element={
+            <ProtectedRoute allowedRoles={['lawyer']}>
+              <LawyerAppointments />
+            </ProtectedRoute>
+          } />
+          <Route path="/lawyer-messages" element={
+            <ProtectedRoute allowedRoles={['lawyer']}>
+              <LawyerMessages />
+            </ProtectedRoute>
+          } />
+          <Route path="/lawyer-clients" element={
+            <ProtectedRoute allowedRoles={['lawyer']}>
+              <LawyerClients />
+            </ProtectedRoute>
+          } />
+          <Route path="/lawyer-earnings" element={
+            <ProtectedRoute allowedRoles={['lawyer']}>
+              <LawyerEarnings />
+            </ProtectedRoute>
+          } />
+        </Routes>
+      </main>
+      {!isDashboard && <Footer />}
+    </div>
+  );
+}
 
 function App() {
   return (
@@ -42,58 +137,9 @@ function App() {
       <LanguageProvider>
         <Router>
           <ScrollToTop />
-          <div className="flex flex-col min-h-screen">
-        <Navbar />
-        <main className="flex-grow">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/lawyers" element={<FindLawyer />} />
-            <Route path="/profile/:id" element={<LawyerProfile />} />
-            <Route path="/lawyer-dashboard" element={
-              <ProtectedRoute allowedRoles={['lawyer']}>
-                <LawyerDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/book-appointment/:id" element={<BookAppointment />} />
-            <Route path="/chat" element={<AIChat />} />
-            <Route path="/ai-assistant" element={<AIAssistant />} />
-            <Route path="/case-complexity" element={<CaseComplexity />} />
-            <Route path="/cost-estimator" element={<CostEstimator />} />
-            <Route path="/legal-roadmap" element={<LegalRoadmap />} />
-            <Route path="/case-timeline" element={<CaseTimeline />} />
-            <Route path="/case-visibility" element={<CaseScoreboard />} />
-            <Route path="/contact-finder" element={<ContactFinder />} />
-            <Route path="/emergency-help" element={<EmergencyHelp />} />
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/user-dashboard" element={
-              <ProtectedRoute allowedRoles={['client']}>
-                <UserDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin" element={
-              <ProtectedRoute allowedRoles={['admin']}>
-                <AdminDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/documents" element={<Documents />} />
-            <Route path="/legal-documents" element={<LegalDocuments />} />
-            <Route path="/categories" element={<Categories />} />
-            <Route path="/family-lawyers" element={<FamilyLawyers />} />
-            <Route path="/recommended-lawyers" element={<RecommendedLawyers />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
-    </Router>
-    </LanguageProvider>
+          <AppContent />
+        </Router>
+      </LanguageProvider>
     </AuthProvider>
   );
 }

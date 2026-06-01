@@ -16,13 +16,15 @@ export const AuthProvider = ({ children }) => {
     const fetchUser = async () => {
       if (token) {
         try {
-          // Assuming you have an endpoint to get the current user profile based on the token
-          const response = await API.get('/auth/me');
-          setUser(response.data.data); // Adjust based on your API response
+          // Fetch the current user profile based on the token
+          const response = await API.get('/users/profile');
+          setUser(response.data);
+          localStorage.setItem('userInfo', JSON.stringify(response.data));
         } catch (error) {
           console.error("Failed to fetch user:", error);
           setToken(null);
           localStorage.removeItem('token');
+          localStorage.removeItem('userInfo');
         }
       }
       setLoading(false);
@@ -45,6 +47,7 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
+    setUser,
     token,
     login,
     logout,

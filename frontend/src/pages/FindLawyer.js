@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import PageTransition from "../components/animations/PageTransition";
 import FadeInScroll from "../components/animations/FadeInScroll";
 import PageHeader from "../components/PageHeader";
-import { Star, ShieldCheck, MapPin, Briefcase, Search, Loader2 } from "lucide-react";
+import { Star, ShieldCheck, MapPin, Briefcase, Search, Loader2, Award } from "lucide-react";
 import API from "../services/api";
 
 function FindLawyer() {
@@ -106,11 +106,12 @@ function FindLawyer() {
                         <span className="text-xs font-bold text-emerald-600 uppercase">Verified Professional</span>
                       </div>
                       <h3 className="text-2xl font-bold mb-1">{lawyer.name}</h3>
-                      <div className="flex items-center gap-4 text-slate-500 mb-6 text-sm">
+                      <div className="flex items-center gap-4 text-slate-500 mb-6 text-sm flex-wrap">
                         <span className="flex items-center gap-1"><Briefcase className="w-4 h-4"/> {lawyer.specialization}</span>
+                        <span className="flex items-center gap-1"><Award className="w-4 h-4"/> {lawyer.experience || "0"}+ Years</span>
                         <span className="flex items-center gap-1"><MapPin className="w-4 h-4"/> {lawyer.city || "Pakistan"}</span>
                       </div>
-                      <Link to={`/profile/${lawyer._id}`}>
+                      <Link to={`/lawyer/${lawyer._id}`}>
                         <button className="w-full py-4 rounded-xl border-2 border-emerald-600 text-emerald-600 font-bold hover:bg-emerald-600 hover:text-white transition-all duration-300">
                           View Full Profile
                         </button>

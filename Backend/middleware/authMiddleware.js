@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Admin = require('../models/Admin');
 
 const protect = async (req, res, next) => {
     let token;
@@ -15,9 +16,13 @@ const protect = async (req, res, next) => {
             // Verify token
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-            // Get user from the token
-            req.user = await User.findById(decoded.id).select('-password');
+            // Try User collection first, then Admin collection
+            let user = await User.findById(decoded.id).select('-password');
+            if (!user) {
+                user = await Admin.findById(decoded.id).select('-password');
+            }
 
+            req.user = user;
             next();
         } catch (error) {
             console.error(error);

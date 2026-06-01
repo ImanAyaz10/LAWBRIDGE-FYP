@@ -18,6 +18,9 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/case', require('./routes/caseRoutes'));
@@ -31,6 +34,7 @@ app.use('/api/reviews', require('./routes/reviewRoutes'));
 app.use('/api/documents', require('./routes/documentRoutes'));
 app.use('/api/payments', require('./routes/paymentRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/admin/auth', require('./routes/adminAuth'));
 
 // Basic Route
 app.get('/', (req, res) => {

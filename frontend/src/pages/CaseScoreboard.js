@@ -1,9 +1,9 @@
 import React from "react";
-import PageTransition from "../components/animations/PageTransition";
-import PageHeader from "../components/PageHeader";
-import { Info, CheckCircle2, AlertCircle } from "lucide-react";
+import DashboardLayout from "../components/DashboardLayout";
+import { Info, CheckCircle2 } from "lucide-react";
 
 function CaseScoreboard() {
+  const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
   const breakdown = [
     { label: "Evidence Strength", score: 85, color: "bg-emerald-500" },
     { label: "Documentation", score: 70, color: "bg-blue-500" },
@@ -13,14 +13,18 @@ function CaseScoreboard() {
   ];
 
   return (
-    <PageTransition>
-      <PageHeader 
-        title="Case Visibility Scoreboard" 
-        subtitle="Track and improve the visibility and strength of your legal case." 
-      />
+    <DashboardLayout role="Client" user={userInfo.name || "User"}>
+      <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+         {/* Banner Card */}
+         <div className="bg-gradient-to-r from-emerald-800 to-emerald-950 text-white rounded-[2.5rem] p-10 shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center gap-8">
+           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(16,185,129,0.15),transparent)] pointer-events-none" />
+           <div className="text-center md:text-left space-y-2">
+              <h2 className="text-3xl font-black font-poppins">Case Visibility Scoreboard</h2>
+              <p className="text-emerald-100/70 font-medium text-sm">Track and improve the visibility and strength of your legal case.</p>
+           </div>
+         </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start mt-10">
           
           {/* Main Score Meter */}
           <div className="bg-white rounded-[3rem] p-12 border border-slate-100 shadow-2xl flex flex-col items-center text-center relative overflow-hidden">
@@ -69,7 +73,7 @@ function CaseScoreboard() {
           <div className="space-y-8 mt-4 lg:mt-0">
              <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-xl">
                 <div className="flex items-center gap-3 mb-10">
-                   <BarChart size={24} className="text-emerald-600" />
+                   <span className="text-emerald-600 font-bold text-lg">📊</span>
                    <h3 className="text-2xl font-bold text-slate-800 font-poppins">Score Breakdown</h3>
                 </div>
 
@@ -104,15 +108,8 @@ function CaseScoreboard() {
 
         </div>
       </div>
-    </PageTransition>
+    </DashboardLayout>
   );
 }
-
-// Helper BarChart
-const BarChart = ({ size, className }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>
-  </svg>
-);
 
 export default CaseScoreboard;

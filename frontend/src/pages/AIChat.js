@@ -117,7 +117,35 @@ function AIChatAssistant() {
                     {msg.sender === "user" ? <User size={20} /> : <Bot size={20} />}
                   </div>
                   <div className={`p-4 rounded-2xl shadow-sm ${msg.sender === "user" ? "bg-emerald-600 text-white rounded-tr-none" : "bg-white text-slate-800 border border-slate-100 rounded-tl-none"}`}>
-                    <p className="leading-relaxed text-sm md:text-base">{msg.text}</p>
+                    {msg.sender === "ai" ? (
+                      <div className="leading-relaxed text-sm md:text-base space-y-1">
+                        {msg.text.split('\n').filter(line => line.trim() !== '').map((line, i) => {
+                          // Check if line is a bullet point (starts with "- ")
+                          const isBullet = line.trim().startsWith('- ');
+                          const content = isBullet ? line.trim().substring(2) : line;
+                          // Render bold text wrapped in **...**
+                          const renderBold = (text) => {
+                            const parts = text.split(/(\*\*.*?\*\*)/g);
+                            return parts.map((part, j) => {
+                              if (part.startsWith('**') && part.endsWith('**')) {
+                                return <strong key={j}>{part.slice(2, -2)}</strong>;
+                              }
+                              return <span key={j}>{part}</span>;
+                            });
+                          };
+                          return isBullet ? (
+                            <div key={i} className="flex items-start gap-2 py-0.5">
+                              <span className="text-emerald-500 font-bold mt-0.5 shrink-0">•</span>
+                              <span>{renderBold(content)}</span>
+                            </div>
+                          ) : (
+                            <p key={i} className="py-0.5">{renderBold(content)}</p>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="leading-relaxed text-sm md:text-base">{msg.text}</p>
+                    )}
                   </div>
                 </div>
               </div>

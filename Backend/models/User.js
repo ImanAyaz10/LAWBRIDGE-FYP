@@ -28,6 +28,15 @@ const userSchema = new mongoose.Schema({
     },
     specialization: String, // For lawyers
     city: String, // For lawyers
+    phone: { type: String },
+    address: { type: String },
+    experience: { type: Number },
+    licenseNumber: { type: String, unique: true, sparse: true },
+    bio: { type: String },
+    profileImage: {
+        type: String,
+        default: '',
+    },
     createdAt: {
         type: Date,
         default: Date.now,
@@ -35,9 +44,9 @@ const userSchema = new mongoose.Schema({
 });
 
 // Encrypt password using bcrypt
-userSchema.pre('save', async function (next) {
+userSchema.pre('save', async function () {
     if (!this.isModified('password')) {
-        next();
+        return;
     }
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
