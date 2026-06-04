@@ -39,9 +39,7 @@ const registerUser = async (req, res) => {
 
         let profileImage = '';
         if (req.file) {
-            const filename = req.file.filename;
-            const baseUrl = `${req.protocol}://${req.get('host')}`;
-            profileImage = `${baseUrl}/uploads/${filename}`;
+            profileImage = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
         }
 
         // Generate 6-digit OTP

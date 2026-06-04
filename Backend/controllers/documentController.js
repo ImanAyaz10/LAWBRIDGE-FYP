@@ -10,11 +10,13 @@ const uploadDocument = asyncHandler(async (req, res) => {
     throw new Error('Please upload a file');
   }
 
+  const base64File = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+
   const document = await Document.create({
     ownerId: req.user._id,
     title: req.body.title || req.file.originalname,
     content: req.body.content || 'Uploaded PDF/Document File',
-    filePath: `/uploads/${req.file.filename}`,
+    filePath: base64File,
   });
 
   res.status(201).json(document);

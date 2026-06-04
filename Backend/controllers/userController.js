@@ -91,11 +91,10 @@ const uploadProfileImage = async (req, res) => {
         const user = await User.findById(req.user._id);
 
         if (user) {
-            const filename = req.file.filename;
-            const baseUrl = `${req.protocol}://${req.get('host')}`;
-            const imageUrl = `${baseUrl}/uploads/${filename}`;
+            // Convert buffer to base64 Data URL
+            const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
 
-            user.profileImage = imageUrl;
+            user.profileImage = base64Image;
             const updatedUser = await user.save();
 
             res.json({

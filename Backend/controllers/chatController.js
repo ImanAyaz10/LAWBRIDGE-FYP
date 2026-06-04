@@ -25,7 +25,7 @@ const getAIResponse = async (userMessage, history) => {
     // Add current user message
     contents.push({ role: "user", parts: [{ text: userMessage }] });
     const requestBody = { systemInstruction, contents };
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody)
@@ -103,8 +103,47 @@ const getChatHistory = async (req, res) => {
     res.json(history);
 };
 
+// @desc    Send a personal message to another user
+// @route   POST /api/chat/personal
+// @access  Private
+const sendPersonalMessage = async (req, res) => {
+    const { receiverId, content } = req.body;
+    if (!receiverId || !content) {
+        res.status(400);
+        throw new Error('Receiver ID and content are required');
+    }
+    const message = await Message.create({
+        senderId: req.user._id,
+        receiverId,
+        role: 'user',
+        content
+    });
+    res.status(201).json(message);
+};
+
+// @desc    Get personal messages between the current user and another user
+// @route   GET /api/chat/personal/:userId
+// @access  Private
+const getPersonalMessages = async (req, res) => {
+    const otherUserId = req.params.userId;
+    if (!otherUserId) {
+        res.status(400);
+        throw new Error('User ID is required');
+    }
+    const messages = await Message.find({
+        $or: [
+            { senderId: req.user._id, receiverId: otherUserId },
+            { senderId: otherUserId, receiverId: req.user._id }
+        ]
+    }).sort({ createdAt: 1 });
+    res.json(messages);
+}
+
+
 module.exports = {
     sendMessage,
-    getChatHistory
+    getChatHistory,
+    sendPersonalMessage,
+    getPersonalMessages
 };
 
