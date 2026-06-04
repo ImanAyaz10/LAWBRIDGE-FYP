@@ -27,7 +27,7 @@ function Contact() {
                 </p>
 
                 <p className="text-lg">
-                  <strong>📧 Email:</strong> support@lawbridge.com
+                  <strong>📧 Email:</strong> lawbridge77@gmail.com
                 </p>
 
                 <p className="text-lg">
