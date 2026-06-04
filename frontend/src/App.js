@@ -35,6 +35,7 @@ import Categories from "./pages/Categories";
 import FamilyLawyers from "./pages/FamilyLawyers";
 import RecommendedLawyers from "./pages/RecommendedLawyers";
 import LegalDocuments from "./pages/LegalDocuments";
+import GenerateDocument from "./pages/GenerateDocument";
 import Profile from "./pages/Profile";
 import ClientAppointments from "./pages/ClientAppointments";
 import LawyerAppointments from "./pages/LawyerAppointments";
@@ -92,8 +93,21 @@ function AppContent() {
               <AdminDashboard />
             </ProtectedRoute>
           } />
-          <Route path="/documents" element={<Documents />} />
-          <Route path="/legal-documents" element={<LegalDocuments />} />
+          <Route path="/documents" element={
+            <ProtectedRoute allowedRoles={['client', 'lawyer']}>
+              <Documents />
+            </ProtectedRoute>
+          } />
+          <Route path="/legal-documents" element={
+            <ProtectedRoute allowedRoles={['client', 'lawyer']}>
+              <LegalDocuments />
+            </ProtectedRoute>
+          } />
+          <Route path="/legal-documents/generate/:code" element={
+            <ProtectedRoute allowedRoles={['client', 'lawyer']}>
+              <GenerateDocument />
+            </ProtectedRoute>
+          } />
           <Route path="/categories" element={<Categories />} />
           <Route path="/family-lawyers" element={<FamilyLawyers />} />
           <Route path="/recommended-lawyers" element={<RecommendedLawyers />} />

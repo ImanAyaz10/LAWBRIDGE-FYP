@@ -1,27 +1,65 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import PageTransition from "../components/animations/PageTransition";
 import PageHeader from "../components/PageHeader";
-import { FileText, Download, Edit3, Search, Filter } from "lucide-react";
+import { FileText, Edit3, Search } from "lucide-react";
+import API from "../services/api";
 
 function LegalDocuments() {
+  const [templates, setTemplates] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
 
   const categories = ["All", "Affidavits", "Agreements", "Contracts", "Corporate", "Property"];
 
-  const documents = [
-    { name: "Affidavit of Income", category: "Affidavits", icon: <FileText className="text-emerald-500" /> },
-    { name: "Rental Agreement", category: "Agreements", icon: <Edit3 className="text-blue-500" /> },
-    { name: "Employment Contract", category: "Contracts", icon: <FileText className="text-purple-500" /> },
-    { name: "Power of Attorney", category: "Corporate", icon: <ShieldCheck className="text-orange-500" /> },
-    { name: "Demand Letter", category: "Corporate", icon: <FileText className="text-red-500" /> },
-    { name: "Will Template", category: "Property", icon: <FileText className="text-teal-500" /> },
-    { name: "Sale Deed", category: "Property", icon: <Edit3 className="text-emerald-500" /> },
-    { name: "Service Agreement", category: "Agreements", icon: <FileText className="text-blue-400" /> },
-  ];
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      try {
+        setLoading(true);
+        const response = await API.get("/templates");
+        setTemplates(response.data);
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching templates:", err);
+        setError("Failed to load legal templates. Please try again later.");
+        setLoading(false);
+      }
+    };
+    fetchTemplates();
+  }, []);
 
-  const filteredDocs = activeCategory === "All" 
-    ? documents 
-    : documents.filter(doc => doc.category === activeCategory);
+  const getTemplateIcon = (code) => {
+    switch (code) {
+      case "affidavit_of_income":
+        return <FileText className="text-emerald-500" />;
+      case "rental_agreement":
+        return <Edit3 className="text-blue-500" />;
+      case "employment_contract":
+        return <FileText className="text-purple-500" />;
+      case "power_of_attorney":
+        return <ShieldCheck className="text-orange-500" />;
+      case "demand_letter":
+        return <FileText className="text-red-500" />;
+      case "will_template":
+        return <FileText className="text-teal-500" />;
+      case "sale_deed":
+        return <Edit3 className="text-emerald-500" />;
+      case "service_agreement":
+        return <FileText className="text-blue-400" />;
+      default:
+        return <FileText className="text-slate-500" />;
+    }
+  };
+
+  const filteredDocs = templates.filter((doc) => {
+    const matchesCategory = activeCategory === "All" || doc.category === activeCategory;
+    const matchesSearch = doc.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          doc.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   return (
     <PageTransition>
@@ -54,33 +92,60 @@ function LegalDocuments() {
               <input 
                 type="text" 
                 placeholder="Search templates..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-12 pr-4 py-3 rounded-xl bg-white border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm transition-all"
               />
            </div>
         </div>
 
+        {/* Loading / Error state */}
+        {loading && (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-red-50 text-red-700 p-6 rounded-2xl border border-red-100 text-center max-w-lg mx-auto">
+            <p className="font-semibold">{error}</p>
+          </div>
+        )}
+
         {/* Document Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-           {filteredDocs.map((doc, i) => (
-             <div key={i} className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-xl hover:shadow-2xl transition-all group flex flex-col items-center text-center">
-                <div className="w-20 h-20 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 border border-slate-100 group-hover:scale-110 transition-transform">
-                   {/* Fallback to FileText if custom icon not available */}
-                   {React.cloneElement(doc.icon, { size: 36 })}
-                </div>
-                <h3 className="text-lg font-bold text-slate-800 mb-2 font-poppins">{doc.name}</h3>
-                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-6">{doc.category}</p>
-                
-                <div className="grid grid-cols-2 gap-3 w-full">
-                  <button className="flex items-center justify-center gap-2 bg-[#032b21] text-white py-3 rounded-xl text-xs font-bold hover:bg-emerald-950 transition-colors">
-                    <Edit3 size={14} /> Generate
-                  </button>
-                  <button className="flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 py-3 rounded-xl text-xs font-bold hover:bg-emerald-100 transition-colors">
-                    <Download size={14} /> Download
-                  </button>
-                </div>
-             </div>
-           ))}
-        </div>
+        {!loading && !error && (
+          <>
+            {filteredDocs.length === 0 ? (
+              <div className="text-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm">
+                <p className="text-slate-400 font-medium">No templates found matching your criteria.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                 {filteredDocs.map((doc) => (
+                   <div key={doc._id} className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-xl hover:shadow-2xl transition-all group flex flex-col justify-between items-center text-center">
+                      <div className="flex flex-col items-center">
+                        <div className="w-20 h-20 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 border border-slate-100 group-hover:scale-110 transition-transform">
+                           {React.cloneElement(getTemplateIcon(doc.code), { size: 36 })}
+                        </div>
+                        <h3 className="text-lg font-bold text-slate-800 mb-2 font-poppins">{doc.title}</h3>
+                        <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-4">{doc.category}</p>
+                        <p className="text-sm text-slate-500 mb-6 leading-relaxed line-clamp-3">{doc.description}</p>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-3 w-full">
+                        <button 
+                          onClick={() => navigate(`/legal-documents/generate/${doc.code}`)}
+                          className="flex items-center justify-center gap-2 bg-[#032b21] text-white py-3 rounded-xl text-xs font-bold hover:bg-emerald-950 transition-colors col-span-2"
+                        >
+                          <Edit3 size={14} /> Generate & Download
+                        </button>
+                      </div>
+                   </div>
+                 ))}
+              </div>
+            )}
+          </>
+        )}
 
         {/* Info Banner */}
         <div className="mt-20 bg-emerald-950 rounded-[3rem] p-10 text-white flex flex-col md:flex-row items-center justify-between gap-8 border border-emerald-800 shadow-2xl relative overflow-hidden">
@@ -89,7 +154,10 @@ function LegalDocuments() {
                <h2 className="text-2xl font-bold mb-2 font-poppins text-[#f1edd3]">Need a Custom Document?</h2>
                <p className="text-emerald-100/60 max-w-lg">Our expert lawyers can draft custom legal agreements tailored to your specific needs.</p>
             </div>
-            <button className="relative z-10 bg-[#f1edd3] text-[#032b21] px-10 py-4 rounded-2xl font-bold hover:bg-white transition-all shadow-xl active:scale-95">
+            <button 
+              onClick={() => navigate("/lawyers")}
+              className="relative z-10 bg-[#f1edd3] text-[#032b21] px-10 py-4 rounded-2xl font-bold hover:bg-white transition-all shadow-xl active:scale-95"
+            >
                Request Custom Draft
             </button>
         </div>

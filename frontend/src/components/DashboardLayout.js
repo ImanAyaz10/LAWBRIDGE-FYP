@@ -27,6 +27,7 @@ const DashboardLayout = ({ children, role = "Client", user = "Ayesha" }) => {
       { name: "Appointments", icon: <Calendar size={20} />, path: "/client-appointments" },
       { name: "Chat History", icon: <MessageSquare size={20} />, path: "/chat" },
       { name: "Documents", icon: <FileText size={20} />, path: "/documents" },
+      { name: "Legal Templates", icon: <FileText size={20} />, path: "/legal-documents" },
       { name: "Case Score", icon: <Briefcase size={20} />, path: "/case-visibility" },
       { name: "Profile", icon: <User size={20} />, path: "/profile" },
     ],
@@ -36,6 +37,7 @@ const DashboardLayout = ({ children, role = "Client", user = "Ayesha" }) => {
       { name: "Messages", icon: <MessageSquare size={20} />, path: "/lawyer-messages" },
       { name: "My Clients", icon: <User size={20} />, path: "/lawyer-clients" },
       { name: "Earnings", icon: <Briefcase size={20} />, path: "/lawyer-earnings" },
+      { name: "Legal Templates", icon: <FileText size={20} />, path: "/legal-documents" },
       { name: "Profile", icon: <User size={20} />, path: "/profile" },
     ],
     Admin: [

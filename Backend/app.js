@@ -32,6 +32,7 @@ app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
 app.use('/api/reviews', require('./routes/reviewRoutes'));
 app.use('/api/documents', require('./routes/documentRoutes'));
+app.use('/api/templates', require('./routes/templateRoutes'));
 app.use('/api/payments', require('./routes/paymentRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/admin/auth', require('./routes/adminAuth'));

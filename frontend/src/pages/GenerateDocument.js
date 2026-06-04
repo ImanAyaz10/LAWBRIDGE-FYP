@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { jsPDF } from "jspdf";
-import DashboardLayout from "../components/DashboardLayout";
-import { FileUp, ShieldCheck, FileText, Download, Eye, X, Upload } from "lucide-react";
+import PageTransition from "../components/animations/PageTransition";
+import { ArrowLeft, CheckSquare, Square, Download, FileText, ChevronRight } from "lucide-react";
 import API from "../services/api";
 
 // Official LawBridge Logo base64
@@ -9,86 +10,70 @@ const LOGO_BASE64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAAH0CAYAA
 
 
 
-function Document() {
-  const [documents, setDocuments] = useState([]);
-  const [file, setFile] = useState(null);
-  const [uploadTitle, setUploadTitle] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState(null);
-  const [selectedDoc, setSelectedDoc] = useState(null); // For viewing generated doc content
-  const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+function GenerateDocument() {
+  const { code } = useParams();
+  const navigate = useNavigate();
 
-  const fetchDocuments = async () => {
-    try {
-      setLoading(true);
-      const response = await API.get("/documents");
-      setDocuments(response.data);
-      setLoading(false);
-    } catch (err) {
-      console.error("Error fetching documents:", err);
-      setError("Failed to load documents.");
-      setLoading(false);
-    }
-  };
+  const [template, setTemplate] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const [formData, setFormData] = useState({});
+  const [step, setStep] = useState(1); // 1: Fill Form, 2: Disclaimer, 3: Generation & Preview
+  const [agreed, setAgreed] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [finalContent, setFinalContent] = useState("");
 
   useEffect(() => {
-    fetchDocuments();
-  }, []);
+    const fetchTemplate = async () => {
+      try {
+        setLoading(true);
+        const response = await API.get(`/templates/${code}`);
+        setTemplate(response.data);
 
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    setFile(selectedFile);
-    if (selectedFile && !uploadTitle) {
-      // Auto-fill title with human-readable filename
-      const titleWithoutExt = selectedFile.name.substring(0, selectedFile.name.lastIndexOf('.')) || selectedFile.name;
-      setUploadTitle(titleWithoutExt);
-    }
+        // Pre-fill form state with empty values
+        const initialForm = {};
+        response.data.fields.forEach((field) => {
+          initialForm[field.name] = "";
+        });
+        setFormData(initialForm);
+
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching template:", err);
+        setError("Failed to load document template. Please check the URL or try again later.");
+        setLoading(false);
+      }
+    };
+
+    fetchTemplate();
+  }, [code]);
+
+  const handleInputChange = (name, value) => {
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
   };
 
-  const handleUpload = async (e) => {
+  const handleFormSubmit = (e) => {
     e.preventDefault();
-    if (!file) {
-      alert("Please select a document first");
-      return;
-    }
 
-    try {
-      setUploading(true);
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("title", uploadTitle);
+    // Generate draft text replacing placeholders
+    let draft = template.contentTemplate;
+    Object.keys(formData).forEach((key) => {
+      const placeholder = `{{${key}}}`;
+      const value = formData[key] || `[${key.toUpperCase()}]`;
+      draft = draft.replace(new RegExp(placeholder, "g"), value);
+    });
 
-      await API.post("/documents/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      // Clear form
-      setFile(null);
-      setUploadTitle("");
-      // Refresh documents
-      await fetchDocuments();
-      alert("Document uploaded successfully!");
-      setUploading(false);
-    } catch (err) {
-      console.error("Error uploading document:", err);
-      alert(err.response?.data?.message || "Failed to upload document. Make sure it is PDF, DOCX, or PNG and under 10MB.");
-      setUploading(false);
-    }
-  };
-
-  const downloadUploadedFile = (filePath, title) => {
-    const baseURL = process.env.REACT_APP_API_URL ? process.env.REACT_APP_API_URL.replace('/api', '') : 'http://localhost:5000';
-    const fullUrl = `${baseURL}${filePath}`;
-    // Open in new tab or trigger download
-    window.open(fullUrl, "_blank");
+    setFinalContent(draft);
+    setStep(2);
   };
 
   const drawBranding = (doc) => {
     // Top border line
-    doc.setDrawColor(3, 43, 33);
+    doc.setDrawColor(3, 43, 33); // Dark Green (#032b21)
     doc.setLineWidth(0.5);
     doc.line(20, 25, 190, 25);
 
@@ -117,45 +102,57 @@ function Document() {
   };
 
   const drawWatermark = (doc) => {
+    // Watermark
     doc.saveGraphicsState();
-    doc.setTextColor(230, 235, 232);
+    doc.setTextColor(230, 235, 232); // Very light greyish emerald
     doc.setFont("helvetica", "bold");
     doc.setFontSize(45);
+    // Draw rotated text in center of A4 page (210x297)
     doc.text("LAWBRIDGE ORIGINAL", 105, 150, {
       align: "center",
-      angle: 315,
+      angle: 315, // Rotate 45 degrees counterclockwise
     });
     doc.restoreGraphicsState();
   };
 
-  const regeneratePDF = (title, content) => {
+  const generatePDF = () => {
     const doc = new jsPDF({
       orientation: "portrait",
       unit: "mm",
       format: "a4",
     });
 
+    // Margins and layout
     const margin = 20;
-    const maxBodyY = 260;
+    const maxBodyY = 260; // Max Y position for text
 
+    // Set Times Font for court-friendly look
     doc.setFont("times", "normal");
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
 
+    // Draw first page header, footer, and watermark
     drawWatermark(doc);
     drawBranding(doc);
 
-    const paragraphs = content.split("\n");
+    // Write title
+    doc.setFont("times", "bold");
+    doc.setFontSize(16);
+    
+    // Split the final content into paragraphs
+    const paragraphs = finalContent.split("\n");
     let currentY = 40;
 
     paragraphs.forEach((p) => {
+      // Clean leading and trailing whitespaces
       const cleanParagraph = p.trim();
 
       if (cleanParagraph === "") {
-        currentY += 4;
+        currentY += 4; // Spacing for empty lines
         return;
       }
 
+      // Check if it's a section header (all uppercase or starts with number)
       const isHeader = cleanParagraph === cleanParagraph.toUpperCase() && cleanParagraph.length > 5;
       
       if (isHeader) {
@@ -166,9 +163,11 @@ function Document() {
         doc.setFontSize(11);
       }
 
+      // Calculate wrapped lines (A4 width 210mm minus 40mm margins = 170mm width)
       const lines = doc.splitTextToSize(cleanParagraph, 170);
 
       lines.forEach((line) => {
+        // Page overflow check
         if (currentY > maxBodyY) {
           doc.addPage();
           drawWatermark(doc);
@@ -179,216 +178,227 @@ function Document() {
         }
 
         if (isHeader) {
+          // Center align header titles
           doc.text(line, 105, currentY, { align: "center" });
         } else {
           doc.text(line, margin, currentY);
         }
-        currentY += 6.5;
+        currentY += 6.5; // Line height
       });
 
-      currentY += 3.5;
+      currentY += 3.5; // Space between paragraphs
     });
 
-    const filename = `${title.toLowerCase().replace(/\s+/g, "_")}_download.pdf`;
+    // Save/Download PDF
+    const filename = `${template.title.toLowerCase().replace(/\s+/g, "_")}_${Date.now()}.pdf`;
     doc.save(filename);
   };
 
-  return (
-    <DashboardLayout role={userInfo.role === "lawyer" ? "Lawyer" : "Client"} user={userInfo.name || "User"}>
-      <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-         {/* Banner Card */}
-         <div className="bg-gradient-to-r from-emerald-800 to-emerald-950 text-white rounded-[2.5rem] p-10 shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center gap-8">
-           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(16,185,129,0.15),transparent)] pointer-events-none" />
-           <div className="text-center md:text-left space-y-2">
-              <h2 className="text-3xl font-black font-poppins">Secure Document Vault</h2>
-              <p className="text-emerald-100/70 font-medium text-sm">Upload existing legal documents or manage files generated from standard templates.</p>
-           </div>
-         </div>
+  const handleGenerateAndSave = async () => {
+    if (!agreed) return;
 
-         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-           {/* Left Upload Panel */}
-           <div className="lg:col-span-1 bg-white rounded-3xl p-8 border border-slate-100 shadow-xl flex flex-col justify-between h-fit">
-              <div>
-                <h3 className="text-xl font-bold text-slate-800 mb-2 font-poppins">Upload Document</h3>
-                <p className="text-slate-400 text-xs font-semibold mb-6">Upload contracts, ID copies, or case papers.</p>
-                
-                <form onSubmit={handleUpload} className="space-y-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-600">Document Title</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. Rent Agreement Signed"
-                      value={uploadTitle}
-                      onChange={(e) => setUploadTitle(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm text-sm"
-                      required
-                    />
-                  </div>
+    try {
+      setSaving(true);
 
-                  <div className="border-2 border-dashed border-emerald-100 rounded-2xl p-6 text-center hover:bg-emerald-50/50 transition-colors cursor-pointer group relative">
-                    <input
-                      type="file"
-                      id="doc-upload"
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                      onChange={handleFileChange}
-                    />
-                    <FileUp className="w-10 h-10 text-emerald-300 mx-auto mb-2 group-hover:text-emerald-600 transition-colors" />
-                    <p className="text-xs font-bold text-slate-700">
-                      {file ? file.name : "Select File"}
-                    </p>
-                    <p className="text-[10px] text-slate-400 mt-1">PDF, DOCX, or PNG (Max 10MB)</p>
-                  </div>
+      // Generate the PDF file for client download
+      generatePDF();
 
-                  <button
-                    type="submit"
-                    disabled={uploading}
-                    className="w-full bg-[#032b21] hover:bg-emerald-950 text-[#f1edd3] py-3 rounded-xl font-bold text-sm transition-all shadow-md flex items-center justify-center gap-2 active:scale-95 disabled:bg-slate-200 disabled:text-slate-400"
-                  >
-                    {uploading ? "Uploading..." : "Upload File"} <Upload size={16} />
-                  </button>
-                </form>
-              </div>
+      // Save document metadata and content in MongoDB
+      const title = `${template.title} - ${formData.deponentName || formData.tenantName || formData.employeeName || formData.principalName || formData.recipientName || formData.testatorName || formData.sellerName || formData.serviceProviderName || "Untitled"}`;
+      
+      await API.post("/documents/save-generated", {
+        title,
+        content: finalContent,
+      });
 
-              <div className="mt-8 bg-emerald-900 rounded-2xl p-6 text-white flex items-start gap-3">
-                 <ShieldCheck className="text-emerald-400 w-6 h-6 shrink-0 mt-0.5" />
-                 <div>
-                    <h4 className="font-bold text-sm">Vault Encrypted</h4>
-                    <p className="text-[11px] text-emerald-100/70 mt-1 leading-relaxed">
-                      All files stored are end-to-end encrypted and completely confidential.
-                    </p>
-                 </div>
-              </div>
-           </div>
+      setSaving(false);
+      setStep(3);
+    } catch (err) {
+      console.error("Error saving generated document:", err);
+      alert("PDF downloaded, but failed to save in your dashboard. Check network connection.");
+      setSaving(false);
+      setStep(3);
+    }
+  };
 
-           {/* Right Vault List Panel */}
-           <div className="lg:col-span-2 bg-white rounded-3xl p-8 border border-slate-100 shadow-xl">
-             <h3 className="text-xl font-bold text-slate-800 mb-6 font-poppins border-b pb-4 flex items-center justify-between">
-                <span>Stored Documents</span>
-                <span className="bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-full border border-emerald-100">
-                  {documents.length} Total
-                </span>
-             </h3>
-
-             {loading ? (
-                <div className="flex justify-center items-center py-20">
-                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600"></div>
-                </div>
-             ) : error ? (
-                <div className="text-center py-10 bg-red-50 rounded-2xl text-red-600 font-semibold border border-red-100">
-                  {error}
-                </div>
-             ) : documents.length === 0 ? (
-                <div className="text-center py-20 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col items-center">
-                  <FileText className="text-slate-300 w-16 h-16 mb-4" />
-                  <p className="text-slate-500 font-bold">No documents stored in vault yet.</p>
-                  <p className="text-slate-400 text-xs mt-1">Upload a file or generate documents using Legal Templates.</p>
-                </div>
-             ) : (
-                <div className="space-y-4">
-                  {documents.map((doc) => (
-                    <div 
-                      key={doc._id} 
-                      className="bg-white hover:bg-slate-50/50 p-5 rounded-2xl border border-slate-100 shadow-sm transition-all flex flex-col sm:flex-row justify-between sm:items-center gap-4 hover:shadow"
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className={`p-3 rounded-xl ${doc.filePath ? "bg-blue-50 text-blue-600" : "bg-emerald-50 text-emerald-600"} border border-slate-100`}>
-                          <FileText size={24} />
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-slate-800 text-sm">{doc.title}</h4>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                              doc.filePath ? "bg-blue-50 text-blue-700 border border-blue-100" : "bg-emerald-50 text-emerald-700 border border-emerald-100"
-                            }`}>
-                              {doc.filePath ? "Uploaded" : "Generated"}
-                            </span>
-                            <span className="text-[10px] text-slate-400 font-medium">
-                              {new Date(doc.createdAt).toLocaleDateString(undefined, {
-                                year: "numeric",
-                                month: "short",
-                                day: "numeric",
-                              })}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 self-end sm:self-center">
-                        {doc.filePath ? (
-                          <button
-                            onClick={() => downloadUploadedFile(doc.filePath, doc.title)}
-                            className="bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-600 p-2.5 rounded-xl transition-all font-bold text-xs flex items-center gap-2"
-                          >
-                            <Download size={15} /> Download
-                          </button>
-                        ) : (
-                          <>
-                            <button
-                              onClick={() => setSelectedDoc(doc)}
-                              className="bg-slate-100 hover:bg-slate-200 text-slate-600 p-2.5 rounded-xl transition-all font-bold text-xs flex items-center gap-2"
-                            >
-                              <Eye size={15} /> View
-                            </button>
-                            <button
-                              onClick={() => regeneratePDF(doc.title, doc.content)}
-                              className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 p-2.5 rounded-xl transition-all font-bold text-xs flex items-center gap-2"
-                            >
-                              <Download size={15} /> PDF
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-             )}
-           </div>
-         </div>
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
       </div>
+    );
+  }
 
-      {/* View Document Modal */}
-      {selectedDoc && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full flex flex-col max-h-[85vh] overflow-hidden border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <div>
-                <h3 className="text-lg font-bold text-slate-800 font-poppins">{selectedDoc.title}</h3>
-                <p className="text-xs text-slate-400 mt-0.5">Template Generated Document</p>
+  if (error || !template) {
+    return (
+      <div className="max-w-md mx-auto my-12 bg-white p-8 rounded-3xl border border-slate-100 shadow-xl text-center">
+        <p className="text-red-600 font-semibold mb-6">{error || "Something went wrong"}</p>
+        <Link to="/legal-documents" className="bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold inline-flex items-center gap-2 hover:bg-emerald-700">
+          <ArrowLeft size={16} /> Back to Templates
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <PageTransition>
+      <div className="max-w-4xl mx-auto space-y-8 pb-16">
+        {/* Step Indicator */}
+        <div className="flex items-center gap-3 text-sm font-bold text-slate-400">
+          <Link to="/legal-documents" className="hover:text-emerald-600 transition-colors flex items-center gap-1">
+            Templates
+          </Link>
+          <ChevronRight size={14} />
+          <span className={step === 1 ? "text-emerald-700" : "text-slate-600"}>Fill Form</span>
+          <ChevronRight size={14} />
+          <span className={step === 2 ? "text-emerald-700" : "text-slate-600"}>Disclaimer</span>
+          <ChevronRight size={14} />
+          <span className={step === 3 ? "text-emerald-700" : "text-slate-600"}>Complete</span>
+        </div>
+
+        {/* Header */}
+        <div className="bg-gradient-to-r from-emerald-800 to-emerald-950 text-white rounded-[2.5rem] p-10 shadow-xl relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(16,185,129,0.15),transparent)] pointer-events-none" />
+          <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+              <h2 className="text-3xl font-black font-poppins">{template.title}</h2>
+              <p className="text-emerald-100/70 text-sm mt-1">{template.description}</p>
+            </div>
+            <Link to="/legal-documents" className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl font-bold transition-all backdrop-blur-md text-xs flex items-center gap-2">
+              <ArrowLeft size={14} /> Cancel
+            </Link>
+          </div>
+        </div>
+
+        {/* STEP 1: Form Filling */}
+        {step === 1 && (
+          <div className="bg-white rounded-[2rem] border border-slate-100 shadow-xl p-10">
+            <h3 className="text-xl font-bold text-slate-800 mb-8 border-b pb-4 flex items-center gap-2">
+              <FileText className="text-emerald-600 w-5 h-5" /> Required Variables
+            </h3>
+            <form onSubmit={handleFormSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {template.fields.map((field) => (
+                  <div key={field.name} className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700">
+                      {field.label} {field.required && <span className="text-red-500">*</span>}
+                    </label>
+                    <input
+                      type={field.type === "number" ? "number" : field.type === "date" ? "date" : "text"}
+                      placeholder={field.placeholder}
+                      value={formData[field.name] || ""}
+                      onChange={(e) => handleInputChange(field.name, e.target.value)}
+                      required={field.required}
+                      className="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm transition-all text-sm font-medium"
+                    />
+                  </div>
+                ))}
               </div>
-              <button 
-                onClick={() => setSelectedDoc(null)}
-                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+
+              <button
+                type="submit"
+                className="w-full bg-[#032b21] hover:bg-emerald-950 text-[#f1edd3] py-4 rounded-xl font-bold transition-all shadow-lg text-sm uppercase tracking-wider flex items-center justify-center gap-2 mt-10 active:scale-95"
               >
-                <X size={20} />
+                Proceed to Download <ChevronRight size={16} />
               </button>
-            </div>
-            
-            <div className="p-8 overflow-y-auto whitespace-pre-wrap font-mono text-xs text-slate-600 leading-relaxed bg-slate-50 flex-1">
-              {selectedDoc.content}
+            </form>
+          </div>
+        )}
+
+        {/* STEP 2: Disclaimer Acceptance */}
+        {step === 2 && (
+          <div className="space-y-8">
+            {/* Draft Preview Container */}
+            <div className="bg-white rounded-[2rem] border border-slate-100 shadow-xl p-10">
+              <h3 className="text-xl font-bold text-slate-800 mb-6 border-b pb-4">Document Content Preview</h3>
+              <div className="bg-slate-50 border border-slate-100 rounded-2xl p-8 max-h-96 overflow-y-auto whitespace-pre-wrap font-mono text-xs text-slate-600 leading-relaxed">
+                {finalContent}
+              </div>
             </div>
 
-            <div className="p-6 border-t border-slate-100 flex justify-end gap-3 bg-slate-50/50">
-              <button
-                onClick={() => setSelectedDoc(null)}
-                className="px-6 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold transition-all"
+            {/* Disclaimer Box */}
+            <div className="bg-emerald-50 border border-emerald-100 rounded-3xl p-8 space-y-6">
+              <h3 className="text-lg font-bold text-emerald-950 font-poppins">Important Notice & Legal Disclaimer</h3>
+              <p className="text-sm text-emerald-800 leading-relaxed font-medium">
+                "This document is generated automatically from a standard legal template and does not constitute legal advice. Users should consult a licensed lawyer before official use."
+              </p>
+              
+              <div 
+                onClick={() => setAgreed(!agreed)}
+                className="flex items-center gap-3 cursor-pointer group bg-white/60 p-4 rounded-xl border border-emerald-200/50 hover:bg-white select-none transition-colors"
               >
-                Close
+                {agreed ? (
+                  <CheckSquare className="text-emerald-700 w-6 h-6 shrink-0" />
+                ) : (
+                  <Square className="text-slate-400 group-hover:text-emerald-600 w-6 h-6 shrink-0" />
+                )}
+                <span className="text-sm font-bold text-emerald-950">I Understand and Agree</span>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-700 py-4 rounded-xl font-bold transition-all shadow-md text-sm active:scale-95"
+              >
+                Back to Edit
               </button>
               <button
-                onClick={() => {
-                  regeneratePDF(selectedDoc.title, selectedDoc.content);
-                  setSelectedDoc(null);
-                }}
-                className="px-6 py-2.5 rounded-xl bg-[#032b21] hover:bg-emerald-950 text-[#f1edd3] text-xs font-bold transition-all flex items-center gap-2"
+                type="button"
+                onClick={handleGenerateAndSave}
+                disabled={!agreed || saving}
+                className={`w-2/3 py-4 rounded-xl font-bold transition-all text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg active:scale-95 ${
+                  agreed && !saving
+                    ? "bg-[#032b21] hover:bg-emerald-950 text-[#f1edd3] cursor-pointer"
+                    : "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
+                }`}
               >
-                <Download size={14} /> Download PDF
+                {saving ? "Generating & Saving..." : "Generate & Download PDF"} <Download size={16} />
               </button>
             </div>
           </div>
-        </div>
-      )}
-    </DashboardLayout>
+        )}
+
+        {/* STEP 3: Complete View */}
+        {step === 3 && (
+          <div className="bg-white rounded-[2rem] border border-slate-100 shadow-xl p-12 text-center space-y-8 animate-in fade-in zoom-in-95 duration-300">
+            <div className="w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center mx-auto border border-emerald-100">
+              <svg className="w-12 h-12 text-emerald-600 fill-none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            
+            <div className="space-y-3">
+              <h3 className="text-2xl font-black text-slate-800 font-poppins">Document Generated Successfully!</h3>
+              <p className="text-slate-500 text-sm max-w-md mx-auto">
+                Your PDF was generated and downloaded. A copy of this document has also been saved to your LawBridge Dashboard.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4 max-w-md mx-auto">
+              <button
+                onClick={() => {
+                  setStep(1);
+                  setAgreed(false);
+                }}
+                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-3.5 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95"
+              >
+                Generate Another
+              </button>
+              <button
+                onClick={() => navigate("/documents")}
+                className="w-full bg-[#032b21] hover:bg-emerald-950 text-[#f1edd3] py-3.5 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95"
+              >
+                View Saved Documents
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </PageTransition>
   );
 }
 
-export default Document;
+export default GenerateDocument;
