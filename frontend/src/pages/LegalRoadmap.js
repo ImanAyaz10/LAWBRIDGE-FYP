@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import PageTransition from "../components/animations/PageTransition";
 import PageHeader from "../components/PageHeader";
-import { Cpu, Send, CheckCircle, ArrowRight } from "lucide-react";
+import { Cpu, CheckCircle } from "lucide-react";
 
 function LegalRoadmap() {
   const [caseType, setCaseType] = useState("");

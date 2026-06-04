@@ -27,6 +27,7 @@ function FindLawyer() {
 
   useEffect(() => {
     fetchLawyers();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category]);
 
   const handleSearch = (e) => {

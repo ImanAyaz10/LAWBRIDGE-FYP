@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import PageTransition from "../components/animations/PageTransition";
 import PageHeader from "../components/PageHeader";
-import { Star, ShieldCheck, MapPin, Mail, Award, Clock, CheckCircle2, Loader2 } from "lucide-react";
+import { MapPin, Mail, Award, Clock, CheckCircle2, Loader2 } from "lucide-react";
 import API from "../services/api";
 
 function LawyerProfile() {

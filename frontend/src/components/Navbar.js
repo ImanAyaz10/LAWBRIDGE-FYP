@@ -3,8 +3,9 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
-  const { user, token, logout } = useAuth();
+  const { user, token, logout } = useAuth(); 
   const navigate = useNavigate();
+
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const isHomePage = location.pathname === "/";
@@ -18,7 +19,7 @@ const Navbar = () => {
   }, []);
 
   const navBgColor = (!isHomePage || scrolled) ? 'bg-[#064e3b] shadow-2xl py-4' : 'bg-transparent py-6';
-  const textColor = 'text-white'; 
+ 
 
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${navBgColor}`}>

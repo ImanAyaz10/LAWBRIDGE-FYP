@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import DashboardLayout from "../components/DashboardLayout";
-import { Check, X, MessageSquare, UserCheck, TrendingUp, AlertCircle } from "lucide-react";
+import { MessageSquare, UserCheck, TrendingUp, AlertCircle } from "lucide-react";
 import API from "../services/api";
 
 function LawyerDashboard() {

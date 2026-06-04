@@ -1,12 +1,10 @@
 import React from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import PageTransition from "../components/animations/PageTransition";
 import PageHeader from "../components/PageHeader";
 import { MessageSquare, BarChart3, Map, Search, ArrowRight } from "lucide-react";
 
 function AIAssistant() {
-  const navigate = useNavigate();
-
   const tools = [
     { title: "Ask AI Lawyer", desc: "Get instant legal guidance and consultation from our advanced AI model.", icon: <MessageSquare size={32} />, path: "/chat", color: "bg-emerald-50 text-emerald-600" },
     { title: "Case Complexity", desc: "Analyze the potential difficulty and success rate of your legal case.", icon: <BarChart3 size={32} />, path: "/case-complexity", color: "bg-blue-50 text-blue-600" },

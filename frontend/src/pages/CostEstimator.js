@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import PageTransition from "../components/animations/PageTransition";
 import PageHeader from "../components/PageHeader";
-import { Calculator, Landmark, Receipt, Sparkles } from "lucide-react";
+import { Calculator, Receipt, Sparkles } from "lucide-react";
 
 function CostEstimator() {
   const [caseType, setCaseType] = useState("");
