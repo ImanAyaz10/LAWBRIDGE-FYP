@@ -10,9 +10,22 @@ const app = express();
 
 // Middleware
 const corsOptions = {
-    origin: process.env.NODE_ENV === 'production' 
-        ? process.env.FRONTEND_URL 
-        : ['http://localhost:3000', 'http://localhost:5173'],
+    origin: function (origin, callback) {
+        const allowedOrigins = [
+            process.env.FRONTEND_URL,
+            'http://localhost:3000', 
+            'http://localhost:5173',
+            'https://lawbridge-fyp-xcg3-i0jeaicb0-iman-ayazs-projects.vercel.app',
+            'https://lawbridge-fyp.vercel.app'
+        ];
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
 };
 app.use(cors(corsOptions));
