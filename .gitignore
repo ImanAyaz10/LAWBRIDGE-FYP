@@ -3,3 +3,7 @@ node_modules
 build
 dist
 .cache
+/Backend/node_modules
+/Backend/.env
+/frontend/node_modules
+/frontend/.local.env

@@ -41,7 +41,13 @@ app.use('/api/admin/auth', require('./routes/adminAuth'));
 app.get('/', (req, res) => {
     res.json({ message: 'Welcome to LawBridge AI Backend' });
 });
-
+// Testing API
+app.get("/test", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "The Api Endpoint is working fine",
+  });
+});
 // Error Handling Middleware
 app.use(notFound);
 app.use(errorHandler);
