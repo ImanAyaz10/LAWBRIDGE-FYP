@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
+const connectDB = require('./config/db');
 
 // Load environment variables
 dotenv.config();
@@ -33,6 +34,12 @@ app.use(express.json());
 
 const path = require('path');
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Ensure DB is connected before handling any requests (crucial for serverless)
+app.use(async (req, res, next) => {
+    await connectDB();
+    next();
+});
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
