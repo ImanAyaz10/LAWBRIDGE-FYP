@@ -44,6 +44,12 @@ const getAIResponse = async (userMessage, history) => {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ error: { message: response.statusText } }));
       console.error("❌ Gemini API HTTP Error:", response.status, JSON.stringify(errorData));
+
+      // Handle rate limit / quota exceeded with friendly message
+      if (response.status === 429) {
+        throw new Error("The AI assistant is temporarily at capacity. Please wait a minute and try again.");
+      }
+
       throw new Error(`Gemini API returned ${response.status}: ${errorData?.error?.message || response.statusText}`);
     }
 
