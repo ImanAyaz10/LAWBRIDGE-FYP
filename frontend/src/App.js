@@ -25,6 +25,9 @@ import Dashboard from "./pages/Dashboard";
 import UserDashboard from "./pages/UserDashboard";
 import LegalRoadmap from "./pages/LegalRoadmap";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminLawyers from "./pages/AdminLawyers";
+import AdminUsers from "./pages/AdminUsers";
+import AdminReports from "./pages/AdminReports";
 import CaseComplexity from "./pages/CaseComplexity";
 import Documents from "./pages/Documents";
 import About from "./pages/About";
@@ -45,7 +48,7 @@ import LawyerEarnings from "./pages/LawyerEarnings";
 
 function AppContent() {
   const location = useLocation();
-  const dashboardPaths = ["/user-dashboard", "/lawyer-dashboard", "/admin", "/profile", "/client-appointments", "/lawyer-appointments", "/lawyer-messages", "/lawyer-clients", "/lawyer-earnings"];
+  const dashboardPaths = ["/user-dashboard", "/lawyer-dashboard", "/admin", "/admin-lawyers", "/admin-users", "/admin-reports", "/profile", "/client-appointments", "/lawyer-appointments", "/lawyer-messages", "/lawyer-clients", "/lawyer-earnings"];
   const isDashboard = dashboardPaths.some(path => location.pathname.startsWith(path));
 
   return (
@@ -84,13 +87,28 @@ function AppContent() {
             </ProtectedRoute>
           } />
           <Route path="/profile" element={
-            <ProtectedRoute allowedRoles={['client', 'lawyer']}>
+            <ProtectedRoute allowedRoles={['client', 'lawyer', 'admin']}>
               <Profile />
             </ProtectedRoute>
           } />
           <Route path="/admin" element={
             <ProtectedRoute allowedRoles={['admin']}>
               <AdminDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin-lawyers" element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminLawyers />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin-users" element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminUsers />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin-reports" element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminReports />
             </ProtectedRoute>
           } />
           <Route path="/documents" element={

@@ -1,5 +1,5 @@
-// controllers/adminController.js
 const User = require('../models/User');
+const Appointment = require('../models/Appointment');
 const asyncHandler = require('express-async-handler');
 
 // @desc    Admin login
@@ -37,12 +37,24 @@ const deleteUser = asyncHandler(async (req, res) => {
   if (!user) {
     return res.status(404).json({ message: 'User not found' });
   }
-  await user.remove();
+  await user.deleteOne();
   res.json({ message: 'User deleted successfully' });
+});
+
+// @desc    Get all appointments (admin only)
+// @route   GET /api/admin/appointments
+// @access  Private/Admin
+const getAllAppointments = asyncHandler(async (req, res) => {
+  const appointments = await Appointment.find()
+    .populate('userId', 'name email')
+    .populate('lawyerId', 'name email specialization')
+    .sort({ createdAt: -1 });
+  res.status(200).json(appointments);
 });
 
 module.exports = {
   adminLogin,
   getAllUsers,
   deleteUser,
+  getAllAppointments,
 };

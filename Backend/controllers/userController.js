@@ -1,11 +1,15 @@
 const User = require('../models/User');
+const Admin = require('../models/Admin');
 
 // @desc    Get user profile
 // @route   GET /api/users/profile
 // @access  Private
 const getUserProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.user._id).select('-password');
+        let user = await User.findById(req.user._id).select('-password');
+        if (!user) {
+            user = await Admin.findById(req.user._id).select('-password');
+        }
         if (user) {
             res.json(user);
         } else {
@@ -21,33 +25,40 @@ const getUserProfile = async (req, res) => {
 // @access  Private
 const updateUserProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.user._id);
+        let user = await User.findById(req.user._id);
+        let isAdmin = false;
+        if (!user) {
+            user = await Admin.findById(req.user._id);
+            isAdmin = true;
+        }
 
         if (user) {
             user.name = req.body.name || user.name;
             user.email = req.body.email || user.email;
 
             // Optional specialized fields for lawyers
-            if (req.body.specialization !== undefined) {
-                user.specialization = req.body.specialization;
-            }
-            if (req.body.city !== undefined) {
-                user.city = req.body.city;
-            }
-            if (req.body.phone !== undefined) {
-                user.phone = req.body.phone;
-            }
-            if (req.body.address !== undefined) {
-                user.address = req.body.address;
-            }
-            if (req.body.experience !== undefined) {
-                user.experience = req.body.experience;
-            }
-            if (req.body.licenseNumber !== undefined) {
-                user.licenseNumber = req.body.licenseNumber;
-            }
-            if (req.body.bio !== undefined) {
-                user.bio = req.body.bio;
+            if (!isAdmin) {
+                if (req.body.specialization !== undefined) {
+                    user.specialization = req.body.specialization;
+                }
+                if (req.body.city !== undefined) {
+                    user.city = req.body.city;
+                }
+                if (req.body.phone !== undefined) {
+                    user.phone = req.body.phone;
+                }
+                if (req.body.address !== undefined) {
+                    user.address = req.body.address;
+                }
+                if (req.body.experience !== undefined) {
+                    user.experience = req.body.experience;
+                }
+                if (req.body.licenseNumber !== undefined) {
+                    user.licenseNumber = req.body.licenseNumber;
+                }
+                if (req.body.bio !== undefined) {
+                    user.bio = req.body.bio;
+                }
             }
 
             // Handle password update if provided
@@ -88,7 +99,10 @@ const uploadProfileImage = async (req, res) => {
             return res.status(400).json({ message: 'Please upload an image file' });
         }
 
-        const user = await User.findById(req.user._id);
+        let user = await User.findById(req.user._id);
+        if (!user) {
+            user = await Admin.findById(req.user._id);
+        }
 
         if (user) {
             // Convert buffer to base64 Data URL

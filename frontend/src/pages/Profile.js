@@ -167,7 +167,7 @@ function Profile() {
     return name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
   };
 
-  const dashboardRoleName = user?.role === "lawyer" ? "Lawyer" : "Client";
+  const dashboardRoleName = user?.role === "admin" ? "Admin" : (user?.role === "lawyer" ? "Lawyer" : "Client");
 
   return (
     <DashboardLayout role={dashboardRoleName} user={user?.name || "User"}>

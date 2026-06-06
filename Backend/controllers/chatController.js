@@ -14,7 +14,7 @@ const getAIResponse = async (userMessage, history) => {
     // Build Gemini request payload
     const contents = [];
     // System instruction (set separately)
-    const systemInstruction = { role: "system", parts: [{ text: "You are a legal assistant for LawBridge, providing professional, friendly advice on Pakistani legal procedures and guiding users to book consultations. Keep responses concise, include a disclaimer that the advice is not a substitute for professional counsel, and format every answer as a list of bullet points, each starting with a hyphen and a space." }] };
+    const systemInstruction = { parts: [{ text: "You are a legal assistant for LawBridge, providing professional, friendly advice on Pakistani legal procedures and guiding users to book consultations. Keep responses concise, include a disclaimer that the advice is not a substitute for professional counsel, and format every answer as a list of bullet points, each starting with a hyphen and a space." }] };
     // Add past conversation context
     if (history && history.length > 0) {
         history.forEach(msg => {

@@ -216,23 +216,32 @@ const loginUser = async (req, res) => {
             return res.status(400).json({ message: 'Please provide email and password' });
         }
 
-        const user = await User.findOne({ email }).select('+password');
+        let user = await User.findOne({ email }).select('+password');
+        let isAdmin = false;
+        
+        if (!user) {
+            const Admin = require('../models/Admin');
+            user = await Admin.findOne({ email }).select('+password');
+            if (user) {
+                isAdmin = true;
+            }
+        }
 
         if (user && (await user.matchPassword(password))) {
             res.json({
                 _id: user._id,
                 name: user.name,
                 email: user.email,
-                role: user.role,
-                specialization: user.specialization,
-                city: user.city,
-                phone: user.phone,
-                address: user.address,
-                experience: user.experience,
-                licenseNumber: user.licenseNumber,
-                bio: user.bio,
-                profileImage: user.profileImage,
-                token: generateToken(user._id),
+                role: isAdmin ? 'admin' : user.role,
+                specialization: !isAdmin ? user.specialization : undefined,
+                city: !isAdmin ? user.city : undefined,
+                phone: !isAdmin ? user.phone : undefined,
+                address: !isAdmin ? user.address : undefined,
+                experience: !isAdmin ? user.experience : undefined,
+                licenseNumber: !isAdmin ? user.licenseNumber : undefined,
+                bio: !isAdmin ? user.bio : undefined,
+                profileImage: user.profileImage || '',
+                token: generateToken(user._id, isAdmin ? 'admin' : undefined),
             });
         } else {
             res.status(401).json({ message: 'Invalid email or password' });

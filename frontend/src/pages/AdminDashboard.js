@@ -1,8 +1,15 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import DashboardLayout from "../components/DashboardLayout";
-import { Users, UserPlus, Calendar, BarChart3, Clock, CheckCircle, XCircle } from "lucide-react";
+import { Users, UserPlus, Calendar, BarChart3, Clock, Loader2, AlertCircle } from "lucide-react";
+import API from "../services/api";
+import { useNavigate } from "react-router-dom";
 
 function AdminDashboard() {
+  const navigate = useNavigate();
+  const [lawyers, setLawyers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
   const stats = [
     { label: "Total Users", value: "3,450", icon: <Users size={24} />, color: "text-blue-600 bg-blue-50" },
     { label: "Verified Lawyers", value: "120", icon: <UserPlus size={24} />, color: "text-emerald-600 bg-emerald-50" },
@@ -10,11 +17,25 @@ function AdminDashboard() {
     { label: "Reports", value: "75", icon: <BarChart3 size={24} />, color: "text-red-600 bg-red-50" },
   ];
 
-  const pendingLawyers = [
-    { name: "Dr. A. Mehmood", specialty: "Corporate Law", exp: "7 Years", status: "Verified" },
-    { name: "Sara Qureshi", specialty: "Immigration Law", exp: "5 Years", status: "Pending" },
-    { name: "M. Bilal", specialty: "Criminal Law", exp: "12 Years", status: "Verified" },
-  ];
+  useEffect(() => {
+    const fetchRecentLawyers = async () => {
+      try {
+        const response = await API.get("/admin/users");
+        // Filter out lawyers and sort by createdAt descending
+        const allLawyers = response.data
+          .filter(user => user.role === 'lawyer')
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setLawyers(allLawyers.slice(0, 5));
+      } catch (err) {
+        console.error("Failed to fetch lawyers for overview", err);
+        setError("Could not fetch registered lawyers.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecentLawyers();
+  }, []);
 
   return (
     <DashboardLayout role="Admin" user="Admin">
@@ -37,52 +58,55 @@ function AdminDashboard() {
 
         {/* Content Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-           {/* Pending Lawyer Approvals */}
+           {/* Recent Lawyers */}
            <div className="lg:col-span-2 bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm">
               <div className="flex justify-between items-center mb-8">
-                 <h2 className="text-xl font-bold text-slate-800 font-poppins">Pending Lawyer Approvals</h2>
-                 <button className="text-emerald-600 font-bold text-sm">View All</button>
+                 <h2 className="text-xl font-bold text-slate-800 font-poppins">Recent Registered Lawyers</h2>
+                 <button 
+                  onClick={() => navigate("/admin-lawyers")} 
+                  className="text-emerald-600 font-bold text-sm hover:underline"
+                 >
+                   View All
+                 </button>
               </div>
 
-              <div className="overflow-x-auto">
-                 <table className="w-full text-left">
-                    <thead>
-                       <tr className="text-slate-400 text-xs font-black uppercase tracking-widest border-b border-slate-50">
-                          <th className="pb-4 px-4 font-black">Name</th>
-                          <th className="pb-4 px-4 font-black">Specialization</th>
-                          <th className="pb-4 px-4 font-black text-center">Exp.</th>
-                          <th className="pb-4 px-4 font-black text-center">Status</th>
-                          <th className="pb-4 px-4 font-black text-right">Action</th>
-                       </tr>
-                    </thead>
-                    <tbody>
-                       {pendingLawyers.map((lawyer, i) => (
-                         <tr key={i} className="border-b border-slate-50 hover:bg-slate-50 transition-colors group">
-                            <td className="py-4 px-4 font-bold text-slate-700">{lawyer.name}</td>
-                            <td className="py-4 px-4 text-slate-500 text-sm">{lawyer.specialty}</td>
-                            <td className="py-4 px-4 text-center font-bold text-slate-400">{lawyer.exp}</td>
-                            <td className="py-4 px-4 text-center">
-                               <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                                  lawyer.status === 'Verified' ? 'bg-emerald-100 text-emerald-700' : 'bg-yellow-100 text-yellow-700'
-                               }`}>
-                                  {lawyer.status}
-                               </span>
-                            </td>
-                            <td className="py-4 px-4 text-right">
-                               <div className="flex items-center justify-end gap-2">
-                                  <button className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all" title="Approve">
-                                     <CheckCircle size={18} />
-                                  </button>
-                                  <button className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Reject">
-                                     <XCircle size={18} />
-                                  </button>
-                               </div>
-                            </td>
+              {loading ? (
+                <div className="flex flex-col items-center justify-center py-12 text-slate-400 gap-2">
+                  <Loader2 className="animate-spin text-emerald-600" size={32} />
+                  <p className="text-sm font-bold">Loading lawyers...</p>
+                </div>
+              ) : error ? (
+                <div className="flex items-center gap-2 text-red-600 bg-red-50 p-4 rounded-2xl border border-red-100 text-sm font-bold">
+                  <AlertCircle size={18} /> {error}
+                </div>
+              ) : lawyers.length === 0 ? (
+                <p className="text-slate-500 font-medium text-center py-12">No registered lawyers found.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                   <table className="w-full text-left">
+                      <thead>
+                         <tr className="text-slate-400 text-xs font-black uppercase tracking-widest border-b border-slate-50">
+                            <th className="pb-4 px-4 font-black">Name</th>
+                            <th className="pb-4 px-4 font-black">Specialization</th>
+                            <th className="pb-4 px-4 font-black text-center">Exp.</th>
+                            <th className="pb-4 px-4 font-black">City</th>
+                            <th className="pb-4 px-4 font-black text-right">Email</th>
                          </tr>
-                       ))}
-                    </tbody>
-                 </table>
-              </div>
+                      </thead>
+                      <tbody>
+                         {lawyers.map((lawyer, i) => (
+                           <tr key={i} className="border-b border-slate-50 hover:bg-slate-50 transition-colors group">
+                              <td className="py-4 px-4 font-bold text-slate-700">{lawyer.name}</td>
+                              <td className="py-4 px-4 text-slate-500 text-sm">{lawyer.specialization || "General"}</td>
+                              <td className="py-4 px-4 text-center font-bold text-slate-400">{lawyer.experience ? `${lawyer.experience} Years` : "N/A"}</td>
+                              <td className="py-4 px-4 text-slate-500 text-sm">{lawyer.city || "N/A"}</td>
+                              <td className="py-4 px-4 text-right text-slate-600 text-sm font-medium">{lawyer.email}</td>
+                           </tr>
+                         ))}
+                      </tbody>
+                   </table>
+                </div>
+              )}
            </div>
 
            {/* Reports Overview Widgets */}
@@ -107,7 +131,10 @@ function AdminDashboard() {
                  </div>
               </div>
               
-              <button className="w-full bg-white border border-slate-200 py-4 rounded-2xl font-bold text-slate-800 shadow-sm hover:shadow-lg transition-all flex items-center justify-center gap-3">
+              <button 
+                onClick={() => navigate("/admin-reports")}
+                className="w-full bg-white border border-slate-200 py-4 rounded-2xl font-bold text-slate-800 shadow-sm hover:shadow-lg transition-all flex items-center justify-center gap-3 active:scale-95"
+              >
                  <BarChart3 size={20} className="text-emerald-600" />
                  Generate Global Report
               </button>

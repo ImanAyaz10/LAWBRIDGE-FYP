@@ -22,6 +22,10 @@ const adminSchema = new mongoose.Schema({
     type: String,
     default: 'admin',
   },
+  profileImage: {
+    type: String,
+    default: '',
+  },
   createdAt: {
     type: Date,
     default: Date.now,
