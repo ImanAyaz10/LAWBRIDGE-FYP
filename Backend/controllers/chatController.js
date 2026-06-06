@@ -3,21 +3,27 @@ const Message = require('../models/Message');
 // Helper to generate a mock AI response
 const fetch = require('node-fetch');
 
-// Helper to call Gemini API with fallback to mock response
+// Helper to call Gemini API — throws on failure so errors are visible
 const getAIResponse = async (userMessage, history) => {
   const apiKey = process.env.GEMINI_API_KEY;
-  // Fallback mock response if API key missing
+
   if (!apiKey) {
-    return generateMockResponse(userMessage);
+    console.error("❌ GEMINI_API_KEY is NOT set in environment variables!");
+    throw new Error("AI service is not configured — GEMINI_API_KEY is missing.");
   }
+
+  // Log first 10 chars of key for debugging (safe partial reveal)
+  console.log("🔑 GEMINI_API_KEY loaded:", apiKey.substring(0, 10) + "...");
+
   try {
     // Build Gemini request payload
     const contents = [];
     // System instruction (set separately)
     const systemInstruction = { parts: [{ text: "You are a legal assistant for LawBridge, providing professional, friendly advice on Pakistani legal procedures and guiding users to book consultations. Keep responses concise, include a disclaimer that the advice is not a substitute for professional counsel, and format every answer as a list of bullet points, each starting with a hyphen and a space." }] };
-    // Add past conversation context
+    // Add past conversation context (limit to last 20 messages to avoid token limits)
     if (history && history.length > 0) {
-        history.forEach(msg => {
+        const recentHistory = history.slice(-20);
+        recentHistory.forEach(msg => {
             const role = msg.role === 'assistant' ? 'model' : 'user';
             contents.push({ role, parts: [{ text: msg.content }] });
         });
@@ -25,20 +31,44 @@ const getAIResponse = async (userMessage, history) => {
     // Add current user message
     contents.push({ role: "user", parts: [{ text: userMessage }] });
     const requestBody = { systemInstruction, contents };
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+
+    console.log("📤 Calling Gemini API with", contents.length, "messages...");
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody)
     });
+
+    // CRITICAL: Check for HTTP errors BEFORE parsing JSON
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: { message: response.statusText } }));
+      console.error("❌ Gemini API HTTP Error:", response.status, JSON.stringify(errorData));
+      throw new Error(`Gemini API returned ${response.status}: ${errorData?.error?.message || response.statusText}`);
+    }
+
     const data = await response.json();
+    console.log("📥 Gemini API responded successfully");
+
     // Extract text response
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
     if (text) return text;
-    // Fallback if unexpected format
-    return generateMockResponse(userMessage);
+
+    // If no text, log the full response for debugging
+    console.error("❌ Gemini API returned unexpected format:", JSON.stringify(data));
+
+    // Check for safety blocks or other issues
+    if (data?.candidates?.[0]?.finishReason === 'SAFETY') {
+      throw new Error("The AI response was blocked by safety filters. Please rephrase your question.");
+    }
+    if (data?.promptFeedback?.blockReason) {
+      throw new Error(`Prompt was blocked: ${data.promptFeedback.blockReason}`);
+    }
+
+    throw new Error("Gemini API returned an empty or unexpected response.");
   } catch (error) {
-    console.error("Gemini API error:", error);
-    return generateMockResponse(userMessage);
+    console.error("❌ Gemini API error:", error.message || error);
+    throw error;
   }
 };
 
@@ -67,32 +97,39 @@ const sendMessage = async (req, res) => {
     const { content } = req.body;
 
     if (!content) {
-        res.status(400);
-        throw new Error('Please provide message content');
+        return res.status(400).json({ error: 'Please provide message content' });
     }
 
-    // 1. Save User Message
-    const userChat = await Message.create({
-        senderId: req.user._id,
-        role: 'user',
-        content: content
-    });
+    try {
+        // 1. Save User Message
+        const userChat = await Message.create({
+            senderId: req.user._id,
+            role: 'user',
+            content: content
+        });
 
-    // 2. Generate AI Response using Gemini with chat history
-    const pastMessages = await Message.find({ senderId: req.user._id }).sort({ createdAt: 1 });
-    const aiContent = await getAIResponse(content, pastMessages);
+        // 2. Generate AI Response using Gemini with chat history
+        const pastMessages = await Message.find({ senderId: req.user._id }).sort({ createdAt: 1 });
+        const aiContent = await getAIResponse(content, pastMessages);
 
-    // 3. Save AI Response
-    const aiChat = await Message.create({
-        senderId: req.user._id, // For AI chat, we'll mark AI responses associated with the user
-        role: 'assistant',
-        content: aiContent
-    });
+        // 3. Save AI Response
+        const aiChat = await Message.create({
+            senderId: req.user._id,
+            role: 'assistant',
+            content: aiContent
+        });
 
-    res.status(201).json({
-        userMessage: userChat,
-        aiMessage: aiChat
-    });
+        res.status(201).json({
+            userMessage: userChat,
+            aiMessage: aiChat
+        });
+    } catch (error) {
+        console.error("❌ sendMessage error:", error.message);
+        res.status(503).json({
+            error: 'AI service temporarily unavailable',
+            detail: error.message
+        });
+    }
 };
 
 // @desc    Get chat history

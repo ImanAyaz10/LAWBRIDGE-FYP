@@ -23,7 +23,7 @@ function Contact() {
 
               <div className="space-y-4">
                 <p className="text-lg">
-                  <strong>📞 Phone:</strong> +92 300 1234567
+                  <strong>📞 Phone:</strong> +92 3245714068
                 </p>
 
                 <p className="text-lg">

@@ -75,8 +75,9 @@ function AIChatAssistant() {
       setChat(prev => [...prev, aiMessage]);
     } catch (err) {
       console.error("Failed to send message", err);
-      setError("Failed to get response. Please check your connection.");
-      setChat(prev => [...prev, { text: "Sorry, I am having trouble connecting to the legal knowledge base right now.", sender: "ai", id: "error-" + Date.now() }]);
+      const errorDetail = err.response?.data?.detail || "Failed to get response. Please check your connection.";
+      setError(errorDetail);
+      setChat(prev => [...prev, { text: `Sorry, I encountered an issue: ${errorDetail}`, sender: "ai", id: "error-" + Date.now() }]);
     } finally {
       setLoading(false);
     }
