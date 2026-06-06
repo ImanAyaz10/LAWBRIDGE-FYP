@@ -7,6 +7,7 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   const [scrolled, setScrolled] = useState(false);
+  const [isOpen, setIsOpen] = useState(false); // mobile menu state
   const location = useLocation();
   const isHomePage = location.pathname === "/";
 
@@ -42,6 +43,15 @@ const Navbar = () => {
           </div>
         </Link>
 
+        {/* Mobile Menu Toggle */}
+        <div className="flex md:hidden items-center">
+          <button onClick={() => setIsOpen(!isOpen)} className="text-white focus:outline-none">
+            {/* Hamburger Icon */}
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+            </svg>
+          </button>
+        </div>
         {/* Links */}
         <div className="hidden md:flex space-x-10 items-center">
           <Link to="/" className="text-white hover:text-emerald-400 font-semibold transition-colors">Home</Link>
@@ -50,7 +60,6 @@ const Navbar = () => {
           <Link to="/categories" className="text-white hover:text-emerald-400 font-semibold transition-colors">Categories</Link>
           <Link to="/legal-documents" className="text-white hover:text-emerald-400 font-semibold transition-colors">Templates</Link>
           <Link to="/contact" className="text-white hover:text-emerald-400 font-semibold transition-colors">Contact</Link>
-          
           {token ? (
             <>
               {user?.role === 'lawyer' && (
@@ -75,6 +84,35 @@ const Navbar = () => {
             </Link>
           )}
         </div>
+        {/* Mobile Menu Overlay */}
+        {isOpen && (
+          <div className="absolute top-full left-0 w-full bg-[#064e3b] shadow-lg md:hidden transition-transform duration-300">
+            <div className="flex flex-col space-y-4 py-4 px-6">
+              <Link onClick={() => setIsOpen(false)} to="/" className="text-white hover:text-emerald-400 font-semibold">Home</Link>
+              <Link onClick={() => setIsOpen(false)} to="/about" className="text-white hover:text-emerald-400 font-semibold">About</Link>
+              <Link onClick={() => setIsOpen(false)} to="/lawyers" className="text-white hover:text-emerald-400 font-semibold">Lawyers</Link>
+              <Link onClick={() => setIsOpen(false)} to="/categories" className="text-white hover:text-emerald-400 font-semibold">Categories</Link>
+              <Link onClick={() => setIsOpen(false)} to="/legal-documents" className="text-white hover:text-emerald-400 font-semibold">Templates</Link>
+              <Link onClick={() => setIsOpen(false)} to="/contact" className="text-white hover:text-emerald-400 font-semibold">Contact</Link>
+              {token ? (
+                <>
+                  {user?.role === 'lawyer' && (
+                    <Link onClick={() => setIsOpen(false)} to="/lawyer-dashboard" className="text-white hover:text-emerald-400 font-semibold">Dashboard</Link>
+                  )}
+                  {user?.role === 'client' && (
+                    <Link onClick={() => setIsOpen(false)} to="/user-dashboard" className="text-white hover:text-emerald-400 font-semibold">Dashboard</Link>
+                  )}
+                  {user?.role === 'admin' && (
+                    <Link onClick={() => setIsOpen(false)} to="/admin" className="text-white hover:text-emerald-400 font-semibold">Admin</Link>
+                  )}
+                  <button onClick={() => { logout(); navigate('/'); setIsOpen(false); }} className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-xl font-bold">Logout</button>
+                </>
+              ) : (
+                <Link onClick={() => setIsOpen(false)} to="/login" className="bg-[#f1edd3] hover:bg-white text-[#064e3b] px-8 py-3 rounded-xl font-bold">Get Started</Link>
+              )}
+            </div>
+          </div>
+        )
       </div>
     </nav>
   );

@@ -33,6 +33,9 @@ const Footer = () => {
              <a href="https://www.instagram.com/lawbridge79?igsh=MTJva2l2NHpreGN1cA==" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-emerald-900 flex items-center justify-center hover:bg-emerald-500 hover:text-emerald-950 transition-all shadow-lg" title="Instagram">
                 <svg className="w-5 h-5 border-2 border-current rounded-[4px] p-[1px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
              </a>
+              <a href="https://wa.me/03245714068" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-emerald-900 flex items-center justify-center hover:bg-emerald-500 hover:text-emerald-950 transition-all shadow-lg" title="WhatsApp">
+                 <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16.94 2.41a10.5 10.5 0 0 0-14.79 0c-4 4-4.95 10.33-2.43 15.34l-2.2 6.38 6.58-2.16a10.45 10.45 0 0 0 5.98 1.68h.03c5.8 0 10.5-4.71 10.5-10.52 0-2.81-1.09-5.45-3.09-7.42zM12 20.5c-2.07 0-4.07-.58-5.79-1.68l-.41-.26-3.9 1.28 1.31-3.81-.31-.45c-1.19-1.71-1.83-3.73-1.83-5.79 0-5.24 4.28-9.51 9.53-9.51 2.55 0 4.95.99 6.76 2.78a9.5 9.5 0 0 1 2.77 6.73c0 5.25-4.27 9.53-9.5 9.53z"/><path d="M16.5 13.5l-2.04-.92c-.27-.12-.58-.06-.75.13l-.85 1.07c-1.71-.91-2.86-1.97-3.71-3.71l1.07-.86c.2-.16.26-.48.13-.75L10.5 7.5c-.15-.33-.5-.5-.84-.41l-2.59.68c-.34.09-.58.41-.58.76 0 4.28 2.55 7.95 6.43 9.56.33.13.71.03.92-.23l1.38-1.73c.21-.26.24-.63.06-.93z"/></svg>
+               </a>
           </div>
         </div>
 
