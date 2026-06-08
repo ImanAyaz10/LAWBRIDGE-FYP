@@ -1,23 +1,25 @@
-const Case = require('../models/Case');
-
-// Helper for AI Analysis (Placeholder for real AI service)
-const analyzeLegalProblem = (description) => {
-    // ... existing logic ...
-    return { 
-        caseType: 'General', 
-        jurisdiction: { city: 'Unknown', court: 'District Court' }, 
-        complexity: 'Medium', 
-        suggestion: 'Consult a lawyer.', 
-        score: 50, 
-        time: '2-4 weeks' 
-    };
-};
+const { analyzeText } = require('../services/aiService');
 
 const analyzeCase = async (req, res) => {
-    // Implementation
-    res.json({ message: "AI Analysis complete (Skeleton)" });
+    const { description } = req.body;
+
+    if (!description) {
+        return res.status(400).json({ error: 'Please provide a case description' });
+    }
+
+    try {
+        const analysis = await analyzeText(description);
+        res.json({ success: true, analysis });
+    } catch (error) {
+        console.error("❌ analyzeCase error:", error.message);
+        res.status(503).json({
+            error: 'AI analysis service temporarily unavailable',
+            detail: error.message
+        });
+    }
 };
 
 module.exports = {
     analyzeCase,
 };
+

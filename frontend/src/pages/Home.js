@@ -1,14 +1,32 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Scale, ShieldCheck, Home as HomeIcon, Briefcase, Globe, Fingerprint, Star, Sparkles } from 'lucide-react';
+import { Scale, ShieldCheck, Home as HomeIcon, Briefcase, Globe, Fingerprint, Star, Sparkles, Loader2 } from 'lucide-react';
 import { useNavigate, Link } from "react-router-dom";
 import lawVideo from "../assets/law-bg.mp4";
+import API from "../services/api";
+
 
 import PageTransition from "../components/animations/PageTransition";
 import FadeInScroll from "../components/animations/FadeInScroll";
 
 const Home = () => {
   const navigate = useNavigate();
+  const [lawyers, setLawyers] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchLawyers = async () => {
+      try {
+        const response = await API.get('/lawyers');
+        setLawyers(response.data.slice(0, 3));
+      } catch (error) {
+        console.error("Failed to fetch featured lawyers", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLawyers();
+  }, []);
   
   const categories = [
     { title: "Family Law", desc: "Marriage, Divorce, Custody", icon: <HomeIcon className="w-6 h-6 text-emerald-600 group-hover:text-white transition-colors" /> },
@@ -127,40 +145,54 @@ const Home = () => {
           </FadeInScroll>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {[
-              { name: "Ali Khan", specialty: "Family Lawyer", img: "/images/WhatsApp Image 2026-06-02 at 12.07.51 AM (1).jpeg", rating: 4.9 },
-              { name: "Sara Ahmed", specialty: "Criminal Lawyer", img: "/images/WhatsApp Image 2026-06-02 at 12.07.52 AM.jpeg", rating: 4.8 },
-              { name: "Usman Malik", specialty: "Property Lawyer", img: "/images/WhatsApp Image 2026-06-02 at 12.07.50 AM.jpeg", rating: 4.7 }
-            ].map((lawyer, idx) => (
-              <FadeInScroll key={idx} delay={idx * 0.1}>
-                <div className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-lg hover:shadow-2xl transition-all group">
-                  <div className="relative h-64 overflow-hidden">
-                    <img 
-                      src={lawyer.img.startsWith('/') ? lawyer.img : `https://images.unsplash.com/photo-${lawyer.img}`} 
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                      alt={lawyer.name} 
-                    />
-                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full flex items-center gap-1 shadow-md">
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      <span className="text-sm font-bold text-slate-700">{lawyer.rating}</span>
+            {loading ? (
+              <div className="col-span-full flex justify-center py-10">
+                <Loader2 className="animate-spin text-emerald-600" size={40} />
+              </div>
+            ) : lawyers.length > 0 ? (
+              lawyers.map((lawyer, idx) => (
+                <FadeInScroll key={idx} delay={idx * 0.1}>
+                  <div className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-lg hover:shadow-2xl transition-all group">
+                    <div className="relative h-64 overflow-hidden bg-slate-100 flex items-center justify-center">
+                      {lawyer.profileImage ? (
+                        <img 
+                          src={lawyer.profileImage} 
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                          alt={lawyer.name} 
+                        />
+                      ) : (
+                        <div className="text-slate-400 flex flex-col items-center">
+                          <Briefcase size={48} />
+                          <span className="font-bold mt-2">LawBridge Profile</span>
+                        </div>
+                      )}
+                      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full flex items-center gap-1 shadow-md">
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-sm font-bold text-slate-700">{lawyer.rating || "5.0"}</span>
+                      </div>
+                    </div>
+                    <div className="p-8">
+                      <div className="flex items-center gap-2 mb-2">
+                        <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                        <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest">Verified Expert</span>
+                      </div>
+                      <h3 className="text-2xl font-bold mb-1 tracking-tight">{lawyer.name}</h3>
+                      <p className="text-slate-500 mb-2 font-medium">{lawyer.specialization || "General Practice"}</p>
+                      <p className="text-slate-400 text-xs mb-6 font-medium">{lawyer.experience || "0"}+ Yrs Experience | {lawyer.city || "Pakistan"}</p>
+                      <Link to={`/lawyer/${lawyer._id}`}>
+                        <button className="w-full py-4 rounded-xl border-2 border-emerald-600 text-emerald-600 font-bold hover:bg-emerald-600 hover:text-white transition-all shadow-sm">
+                          View Full Profile
+                        </button>
+                      </Link>
                     </div>
                   </div>
-                  <div className="p-8">
-                    <div className="flex items-center gap-2 mb-2">
-                      <ShieldCheck className="w-5 h-5 text-emerald-600" />
-                      <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest">Verified Expert</span>
-                    </div>
-                    <h3 className="text-2xl font-bold mb-1 tracking-tight">{lawyer.name}</h3>
-                    <p className="text-slate-500 mb-6 font-medium">{lawyer.specialty}</p>
-                    <Link to="/profile">
-                      <button className="w-full py-4 rounded-xl border-2 border-emerald-600 text-emerald-600 font-bold hover:bg-emerald-600 hover:text-white transition-all shadow-sm">
-                        View Full Profile
-                      </button>
-                    </Link>
-                  </div>
-                </div>
-              </FadeInScroll>
-            ))}
+                </FadeInScroll>
+              ))
+            ) : (
+              <div className="col-span-full text-center text-slate-400 py-10 font-bold">
+                No registered lawyers found.
+              </div>
+            )}
           </div>
         </div>
       </section>

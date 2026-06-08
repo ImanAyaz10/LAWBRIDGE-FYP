@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import PageTransition from "./animations/PageTransition";
 import { useAuth } from "../context/AuthContext";
+import Footer from "./Footer";
+
 
 const DashboardLayout = ({ children, role = "Client", user = "Ayesha" }) => {
   const location = useLocation();
@@ -152,10 +154,13 @@ const DashboardLayout = ({ children, role = "Client", user = "Ayesha" }) => {
         </header>
 
         {/* Content Overflow Area */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-10 bg-[#F8FAF9]">
-           <PageTransition>
-              {children}
-           </PageTransition>
+        <div className="flex-1 overflow-y-auto p-6 md:p-10 bg-[#F8FAF9] flex flex-col justify-between">
+           <div className="flex-1 mb-10">
+              <PageTransition>
+                 {children}
+              </PageTransition>
+           </div>
+           <Footer />
         </div>
       </main>
     </div>

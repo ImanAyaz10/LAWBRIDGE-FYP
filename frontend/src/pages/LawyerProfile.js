@@ -4,10 +4,12 @@ import PageTransition from "../components/animations/PageTransition";
 import PageHeader from "../components/PageHeader";
 import { MapPin, Mail, Award, Clock, CheckCircle2, Loader2 } from "lucide-react";
 import API from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
 function LawyerProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { token } = useAuth();
   const [lawyer, setLawyer] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -79,7 +81,13 @@ function LawyerProfile() {
 
             <button
               className="w-full mt-8 bg-emerald-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-emerald-600/30 hover:bg-emerald-700 transition-all active:scale-95"
-              onClick={() => navigate(`/book-appointment/${id}`)}
+              onClick={() => {
+                if (!token) {
+                  navigate("/login", { state: { from: `/book-appointment/${id}` } });
+                } else {
+                  navigate(`/book-appointment/${id}`);
+                }
+              }}
             >
               Book Consultation
             </button>
@@ -111,7 +119,9 @@ function LawyerProfile() {
                 </div>
                 <div>
                   <p className="text-xs text-slate-400 font-bold uppercase">Email</p>
-                  <p className="text-slate-800 font-semibold">{lawyer.email}</p>
+                  <p className="text-slate-800 font-semibold">
+                    {token ? lawyer.email : <span className="text-slate-400 italic text-sm">Login to view email</span>}
+                  </p>
                 </div>
               </div>
               
@@ -125,14 +135,16 @@ function LawyerProfile() {
                 </div>
               </div>
 
-              {lawyer.licenseNumber && (
+              {(token ? lawyer.licenseNumber : true) && (
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600">
                     <Award size={20} />
                   </div>
                   <div>
                     <p className="text-xs text-slate-400 font-bold uppercase">License ID</p>
-                    <p className="text-slate-800 font-semibold">{lawyer.licenseNumber}</p>
+                    <p className="text-slate-800 font-semibold">
+                      {token ? lawyer.licenseNumber : <span className="text-slate-400 italic text-sm">Login to view License ID</span>}
+                    </p>
                   </div>
                 </div>
               )}
