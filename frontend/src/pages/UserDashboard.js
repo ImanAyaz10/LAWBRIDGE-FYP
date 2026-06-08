@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../components/DashboardLayout";
 import { Clock, MessageSquare, FileText, CheckCircle2, AlertCircle } from "lucide-react";
 import API from "../services/api";
@@ -7,10 +8,13 @@ function UserDashboard() {
   const [data, setData] = useState({
     appointments: [],
     cases: [],
+    reminders: [],
+    notifications: [],
     stats: { totalCases: 0, totalAppointments: 0 }
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
 
@@ -48,6 +52,61 @@ function UserDashboard() {
 
   return (
     <DashboardLayout role="Client" user={userInfo.name || "User"}>
+      {/* Reminders Banner */}
+      {data.reminders && data.reminders.length > 0 && (
+        <div className="mb-8 space-y-4">
+          {data.reminders.map((reminder, idx) => (
+            <div key={idx} className="bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-3xl p-6 shadow-lg flex items-center justify-between gap-6 animate-pulse">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <Clock size={24} />
+                </div>
+                <div>
+                  <h4 className="font-bold text-lg">{reminder.title}</h4>
+                  <p className="text-sm text-white/90">{reminder.message}</p>
+                </div>
+              </div>
+              {reminder.consultationType === "Video" && (
+                <button
+                  onClick={() => navigate(`/consultation/${reminder.id}`)}
+                  className="bg-white text-orange-600 font-bold px-6 py-2.5 rounded-xl hover:bg-orange-50 transition-all active:scale-95 text-xs shadow-md whitespace-nowrap"
+                >
+                  Join Consultation Room
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Notifications Alerts */}
+      {data.notifications && data.notifications.length > 0 && (
+        <div className="mb-8 space-y-3">
+          <h3 className="text-xs font-black uppercase tracking-wider text-slate-400">Updates & Notifications</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {data.notifications.slice(0, 4).map((notif, idx) => (
+              <div key={idx} className={`p-5 rounded-2xl border flex items-start gap-4 shadow-sm ${
+                notif.type === 'confirmed' ? 'bg-emerald-50 border-emerald-100 text-emerald-800' :
+                notif.type === 'rejected' ? 'bg-red-50 border-red-100 text-red-800' :
+                'bg-slate-50 border-slate-100 text-slate-700'
+              }`}>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                  notif.type === 'confirmed' ? 'bg-emerald-500 text-white' :
+                  notif.type === 'rejected' ? 'bg-red-500 text-white' :
+                  'bg-slate-400 text-white'
+                }`}>
+                  <CheckCircle2 size={20} />
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm">{notif.title}</h4>
+                  <p className="text-xs opacity-90 mt-1">{notif.message}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* Left Column: Appointments & Chats */}
@@ -56,7 +115,7 @@ function UserDashboard() {
            <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm">
               <div className="flex justify-between items-center mb-8">
                  <h2 className="text-xl font-bold text-slate-800 font-poppins">My Appointments</h2>
-                 <button className="text-emerald-600 font-bold text-sm hover:underline">View All</button>
+                 <button onClick={() => navigate("/client-appointments")} className="text-emerald-600 font-bold text-sm hover:underline">View All</button>
               </div>
 
               {error && (
@@ -87,15 +146,19 @@ function UserDashboard() {
                              </span>
                           </div>
                           <span className={`px-4 py-1.5 rounded-full text-xs font-bold ${
-                            app.status === 'Accepted' ? "text-emerald-600 bg-emerald-50" : 
-                            app.status === 'Pending' ? "text-yellow-600 bg-yellow-50" : 
-                            "text-slate-600 bg-slate-50"
+                            app.status === 'Confirmed' || app.status === 'Accepted' ? "text-emerald-600 bg-emerald-50 border border-emerald-100" : 
+                            app.status === 'Pending' ? "text-yellow-600 bg-yellow-50 border border-yellow-100" : 
+                            app.status === 'Rejected' ? "text-red-600 bg-red-50 border border-red-100" :
+                            "text-slate-600 bg-slate-50 border border-slate-100"
                           }`}>
                              {app.status}
                           </span>
-                          {app.status === 'Accepted' && (
-                            <button className="ml-2 px-3 py-1.5 bg-[#0f4c3a] text-white text-xs font-bold rounded-lg hover:bg-emerald-700 transition-colors shadow-sm">
-                              Join Video
+                          {(app.status === 'Confirmed' || app.status === 'Accepted') && app.consultationType === 'Video' && (
+                            <button 
+                              onClick={() => navigate(`/consultation/${app._id}`)}
+                              className="ml-2 px-3 py-1.5 bg-[#0f4c3a] text-white text-xs font-bold rounded-lg hover:bg-emerald-700 transition-colors shadow-sm"
+                            >
+                              Join Call
                             </button>
                           )}
                        </div>

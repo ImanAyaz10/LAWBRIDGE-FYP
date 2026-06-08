@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../components/DashboardLayout";
 import { Clock, AlertCircle } from "lucide-react";
 import API from "../services/api";
@@ -7,6 +8,7 @@ function LawyerAppointments() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
 
@@ -28,7 +30,13 @@ function LawyerAppointments() {
 
   const handleAction = async (id, action) => {
     try {
-      await API.put(`/appointments/${id}`, { status: action });
+      let payload = { status: action };
+      if (action === 'Rejected') {
+        const reason = window.prompt("Please enter a reason for rejecting this appointment (optional):");
+        if (reason === null) return; // user cancelled
+        payload.rejectionReason = reason;
+      }
+      await API.put(`/appointments/${id}`, payload);
       fetchAppointments();
     } catch (err) {
       console.error(err);
@@ -43,7 +51,7 @@ function LawyerAppointments() {
            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(16,185,129,0.15),transparent)] pointer-events-none" />
            <div className="text-left space-y-2">
               <h2 className="text-3xl font-black font-poppins">Manage Schedule</h2>
-              <p className="text-emerald-100/70 font-medium text-sm">Review, accept, or reject client consultation requests.</p>
+              <p className="text-emerald-100/70 font-medium text-sm">Review, accept, reject or complete client consultation requests.</p>
            </div>
          </div>
 
@@ -62,47 +70,95 @@ function LawyerAppointments() {
            <div className="space-y-4">
               {appointments.length > 0 ? (
                 appointments.map((app, i) => (
-                 <div key={i} className="flex items-center justify-between p-6 bg-white rounded-3xl border border-slate-100 shadow-md transition-all hover:shadow-xl">
-                    <div className="flex items-center gap-4">
-                       <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 font-black text-xl">
-                         {app.userId?.name?.charAt(0) || "C"}
+                 <div key={i} className="p-6 bg-white rounded-3xl border border-slate-100 shadow-md transition-all hover:shadow-xl space-y-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                       <div className="flex items-center gap-4">
+                          <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 font-black text-xl shrink-0">
+                            {app.userId?.name?.charAt(0) || "C"}
+                          </div>
+                          <div>
+                             <h4 className="font-bold text-slate-800 text-lg">{app.userId?.name || "Client"}</h4>
+                             <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">{app.userId?.email || "No Email"}</p>
+                          </div>
                        </div>
-                       <div>
-                          <h4 className="font-bold text-slate-800 text-lg">{app.userId?.name || "Client"}</h4>
-                          <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">{app.userId?.email || "No Email"}</p>
+                       <div className="flex flex-wrap items-center gap-4">
+                          <div className="flex items-center gap-2 text-slate-500 font-medium">
+                             <Clock size={16} />
+                             <span className="text-sm">
+                               {new Date(app.date).toLocaleDateString()} - {app.time}
+                             </span>
+                          </div>
+                          <span className={`px-4 py-1.5 rounded-full text-xs font-black tracking-widest uppercase ${
+                            app.status === 'Confirmed' || app.status === 'Accepted' ? "text-emerald-600 bg-emerald-50 border border-emerald-100" : 
+                            app.status === 'Pending' ? "text-yellow-600 bg-yellow-50 border border-yellow-100" : 
+                            app.status === 'Rejected' ? "text-red-600 bg-red-50 border border-red-100" :
+                            app.status === 'Completed' ? "text-blue-600 bg-blue-50 border border-blue-100" :
+                            "text-slate-600 bg-slate-50 border border-slate-100"
+                          }`}>
+                             {app.status}
+                          </span>
+                          <div className="flex items-center gap-2">
+                             {app.status === 'Pending' ? (
+                               <>
+                                 <button 
+                                   onClick={() => handleAction(app._id, 'Accepted')}
+                                   className="bg-emerald-600 text-white px-5 py-2 rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all shadow-md active:scale-95 whitespace-nowrap"
+                                 >
+                                   Accept
+                                 </button>
+                                 <button 
+                                   onClick={() => handleAction(app._id, 'Rejected')}
+                                   className="bg-red-50 text-red-600 px-5 py-2 rounded-xl text-xs font-bold hover:bg-red-100 transition-all active:scale-95 whitespace-nowrap"
+                                 >
+                                   Reject
+                                 </button>
+                               </>
+                             ) : (
+                               <>
+                                 {(app.status === 'Confirmed' || app.status === 'Accepted') && app.consultationType === 'Video' && (
+                                   <button 
+                                     onClick={() => navigate(`/consultation/${app._id}`)}
+                                     className="px-5 py-2.5 bg-[#0f4c3a] text-white text-xs font-bold rounded-xl hover:bg-emerald-700 transition-colors shadow-lg active:scale-95 whitespace-nowrap animate-pulse"
+                                   >
+                                     Join Video Call
+                                   </button>
+                                 )}
+                                 {(app.status === 'Confirmed' || app.status === 'Accepted') && (
+                                   <button 
+                                     onClick={() => handleAction(app._id, 'Completed')}
+                                     className="px-5 py-2.5 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-lg active:scale-95 whitespace-nowrap"
+                                   >
+                                     Complete
+                                   </button>
+                                 )}
+                               </>
+                             )}
+                          </div>
                        </div>
                     </div>
-                    <div className="flex items-center gap-6">
-                       <div className="flex items-center gap-2 text-slate-500 font-medium">
-                          <Clock size={16} />
-                          <span className="text-sm">
-                            {new Date(app.date).toLocaleDateString()} - {app.time}
+
+                    {/* Details Section */}
+                    <div className="border-t border-slate-100 pt-4 flex flex-col gap-2">
+                       <div className="flex items-center justify-between">
+                          <span className="text-sm font-bold text-slate-700 font-poppins">Subject: {app.subject || "General Consultation"}</span>
+                          <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
+                            app.consultationType === 'Video' ? 'bg-blue-50 text-blue-600' :
+                            app.consultationType === 'Audio' ? 'bg-purple-50 text-purple-600' :
+                            'bg-teal-50 text-teal-600'
+                          }`}>
+                             {app.consultationType} Consultation
                           </span>
                        </div>
-                       <div className="flex items-center gap-3">
-                          {app.status === 'Pending' ? (
-                            <>
-                              <button 
-                                onClick={() => handleAction(app._id, 'Accepted')}
-                                className="bg-emerald-600 text-white px-5 py-2 rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all shadow-md active:scale-95"
-                              >
-                                Accept
-                              </button>
-                              <button 
-                                onClick={() => handleAction(app._id, 'Rejected')}
-                                className="bg-red-50 text-red-600 px-5 py-2 rounded-xl text-xs font-bold hover:bg-red-100 transition-all active:scale-95"
-                              >
-                                Reject
-                              </button>
-                            </>
-                          ) : (
-                            <span className={`px-4 py-1.5 rounded-full text-xs font-black tracking-widest uppercase ${
-                              app.status === 'Accepted' ? "text-emerald-600 bg-emerald-50 border border-emerald-100" : "text-red-600 bg-red-50 border border-red-100"
-                            }`}>
-                               {app.status}
-                            </span>
-                          )}
-                       </div>
+                       {app.notes && (
+                          <p className="text-xs text-slate-500 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                             <span className="font-semibold text-slate-700">Notes:</span> {app.notes}
+                          </p>
+                       )}
+                       {app.status === 'Rejected' && app.rejectionReason && (
+                          <p className="text-xs text-red-600 bg-red-50/50 p-3 rounded-xl border border-red-100">
+                             <span className="font-bold">Rejection Reason:</span> {app.rejectionReason}
+                          </p>
+                       )}
                     </div>
                  </div>
                 ))

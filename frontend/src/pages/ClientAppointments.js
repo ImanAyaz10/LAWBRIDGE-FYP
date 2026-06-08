@@ -57,47 +57,78 @@ function ClientAppointments() {
              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-600"></div>
            </div>
          ) : (
-           <div className="space-y-4">
-              {appointments.length > 0 ? (
-                appointments.map((app, i) => (
-                 <div key={i} className="flex items-center justify-between p-6 bg-white rounded-3xl border border-slate-100 shadow-md transition-all hover:shadow-xl">
-                    <div className="flex items-center gap-4">
-                       <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 font-black text-xl">
-                         {app.lawyerId?.name?.charAt(0) || "L"}
-                       </div>
-                       <div>
-                          <h4 className="font-bold text-slate-800 text-lg">{app.lawyerId?.name || "Lawyer"}</h4>
-                          <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">{app.lawyerId?.specialization || "Legal Expert"}</p>
-                       </div>
-                    </div>
-                    <div className="flex items-center gap-10">
-                       <div className="flex items-center gap-2 text-slate-500 font-medium">
-                          <Clock size={16} />
-                          <span className="text-sm">
-                            {new Date(app.date).toLocaleDateString()} - {app.time}
-                          </span>
-                       </div>
-                       <span className={`px-4 py-1.5 rounded-full text-xs font-black tracking-widest uppercase ${
-                         app.status === 'Accepted' ? "text-emerald-600 bg-emerald-50 border border-emerald-100" : 
-                         app.status === 'Pending' ? "text-yellow-600 bg-yellow-50 border border-yellow-100" : 
-                         "text-slate-600 bg-slate-50 border border-slate-100"
-                       }`}>
-                          {app.status}
-                       </span>
-                       {app.status === 'Accepted' && (
-                         <button className="px-5 py-2.5 bg-[#0f4c3a] text-white text-xs font-bold rounded-xl hover:bg-emerald-700 transition-colors shadow-lg active:scale-95">
-                           Join Video Call
-                         </button>
-                       )}
-                    </div>
+            <div className="space-y-4">
+               {appointments.length > 0 ? (
+                 appointments.map((app, i) => (
+                  <div key={i} className="p-6 bg-white rounded-3xl border border-slate-100 shadow-md transition-all hover:shadow-xl space-y-4">
+                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                           <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 font-black text-xl shrink-0">
+                             {app.lawyerId?.name?.charAt(0) || "L"}
+                           </div>
+                           <div>
+                              <h4 className="font-bold text-slate-800 text-lg">{app.lawyerId?.name || "Lawyer"}</h4>
+                              <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">{app.lawyerId?.specialization || "Legal Expert"}</p>
+                           </div>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-4">
+                           <div className="flex items-center gap-2 text-slate-500 font-medium">
+                              <Clock size={16} />
+                              <span className="text-sm">
+                                {new Date(app.date).toLocaleDateString()} - {app.time}
+                              </span>
+                           </div>
+                           <span className={`px-4 py-1.5 rounded-full text-xs font-black tracking-widest uppercase ${
+                             app.status === 'Confirmed' || app.status === 'Accepted' ? "text-emerald-600 bg-emerald-50 border border-emerald-100" : 
+                             app.status === 'Pending' ? "text-yellow-600 bg-yellow-50 border border-yellow-100" : 
+                             app.status === 'Rejected' ? "text-red-600 bg-red-50 border border-red-100" :
+                             app.status === 'Completed' ? "text-blue-600 bg-blue-50 border border-blue-100" :
+                             "text-slate-600 bg-slate-50 border border-slate-100"
+                           }`}>
+                              {app.status}
+                           </span>
+                           {(app.status === 'Confirmed' || app.status === 'Accepted') && app.consultationType === 'Video' && (
+                             <button 
+                               onClick={() => navigate(`/consultation/${app._id}`)}
+                               className="px-5 py-2.5 bg-[#0f4c3a] text-white text-xs font-bold rounded-xl hover:bg-emerald-700 transition-colors shadow-lg active:scale-95 whitespace-nowrap"
+                             >
+                               Join Video Call
+                             </button>
+                           )}
+                        </div>
+                     </div>
+
+                     {/* Details Section */}
+                     <div className="border-t border-slate-100 pt-4 flex flex-col gap-2">
+                        <div className="flex items-center justify-between">
+                           <span className="text-sm font-bold text-slate-700 font-poppins">Subject: {app.subject || "General Consultation"}</span>
+                           <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
+                             app.consultationType === 'Video' ? 'bg-blue-50 text-blue-600' :
+                             app.consultationType === 'Audio' ? 'bg-purple-50 text-purple-600' :
+                             'bg-teal-50 text-teal-600'
+                           }`}>
+                              {app.consultationType} Consultation
+                           </span>
+                        </div>
+                        {app.notes && (
+                           <p className="text-xs text-slate-500 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                              <span className="font-semibold text-slate-700">Notes:</span> {app.notes}
+                           </p>
+                        )}
+                        {app.status === 'Rejected' && app.rejectionReason && (
+                           <p className="text-xs text-red-600 bg-red-50/50 p-3 rounded-xl border border-red-100">
+                              <span className="font-bold">Rejection Reason:</span> {app.rejectionReason}
+                           </p>
+                        )}
+                     </div>
+                  </div>
+                 ))
+               ) : (
+                 <div className="text-center py-20 text-slate-400 font-bold bg-white rounded-3xl border-2 border-dashed border-slate-200">
+                   No appointments found. Book a consultation to get started!
                  </div>
-                ))
-              ) : (
-                <div className="text-center py-20 text-slate-400 font-bold bg-white rounded-3xl border-2 border-dashed border-slate-200">
-                  No appointments found. Book a consultation to get started!
-                </div>
-              )}
-           </div>
+               )}
+            </div>
          )}
       </div>
     </DashboardLayout>

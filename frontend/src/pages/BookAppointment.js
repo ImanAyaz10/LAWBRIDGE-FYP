@@ -14,7 +14,9 @@ function BookAppointment() {
   const [formData, setFormData] = useState({
     date: "",
     time: "",
-    summary: ""
+    consultationType: "Video",
+    subject: "",
+    notes: ""
   });
 
   const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
@@ -45,7 +47,9 @@ function BookAppointment() {
         lawyerId: id,
         date: formData.date,
         time: formData.time,
-        summary: formData.summary
+        consultationType: formData.consultationType,
+        subject: formData.subject,
+        notes: formData.notes
       });
       alert("Appointment Booked Successfully!");
       navigate("/user-dashboard");
@@ -133,6 +137,38 @@ function BookAppointment() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                    <MessageSquare size={16} className="text-emerald-600" /> Consultation Type
+                  </label>
+                  <select
+                    name="consultationType"
+                    value={formData.consultationType}
+                    onChange={handleChange}
+                    className="w-full px-6 py-4 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all font-medium text-slate-700"
+                  >
+                    <option value="Video">Video Consultation (Jitsi)</option>
+                    <option value="Audio">Audio Call Only</option>
+                    <option value="In-Person">In-Person Meeting</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                    <MessageSquare size={16} className="text-emerald-600" /> Case Subject
+                  </label>
+                  <input
+                    type="text"
+                    name="subject"
+                    required
+                    placeholder="e.g. Divorce Petition, Property Claim"
+                    value={formData.subject}
+                    onChange={handleChange}
+                    className="w-full px-6 py-4 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all font-medium"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
                     <Calendar size={16} className="text-emerald-600" /> Select Date
                   </label>
                   <input
@@ -161,14 +197,14 @@ function BookAppointment() {
 
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
-                  <MessageSquare size={16} className="text-emerald-600" /> Case Summary
+                  <MessageSquare size={16} className="text-emerald-600" /> Case Details & Notes
                 </label>
                 <textarea
-                  name="summary"
-                  placeholder="Tell us a bit about your legal situation..."
+                  name="notes"
+                  placeholder="Describe your situation in detail..."
                   required
                   rows="4"
-                  value={formData.summary}
+                  value={formData.notes}
                   onChange={handleChange}
                   className="w-full px-6 py-4 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all font-medium resize-none"
                 />

@@ -19,6 +19,7 @@ import LawyerDashboard from "./pages/LawyerDashboard";
 import CostEstimator from "./pages/CostEstimator";
 import BookAppointment from "./pages/BookAppointment";
 import AIChat from "./pages/AIChat";
+import VideoConsultation from "./pages/VideoConsultation";
 
 import AIAssistant from "./pages/AIAssistant";
 import Dashboard from "./pages/Dashboard";
@@ -66,7 +67,16 @@ function AppContent() {
               <LawyerDashboard />
             </ProtectedRoute>
           } />
-          <Route path="/book-appointment/:id" element={<BookAppointment />} />
+          <Route path="/book-appointment/:id" element={
+            <ProtectedRoute>
+              <BookAppointment />
+            </ProtectedRoute>
+          } />
+          <Route path="/consultation/:id" element={
+            <ProtectedRoute>
+              <VideoConsultation />
+            </ProtectedRoute>
+          } />
           <Route path="/chat" element={<AIChat />} />
           <Route path="/ai-assistant" element={<AIAssistant />} />
           <Route path="/case-complexity" element={<CaseComplexity />} />

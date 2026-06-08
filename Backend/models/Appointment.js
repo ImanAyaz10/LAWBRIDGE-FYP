@@ -23,9 +23,23 @@ const appointmentSchema = new mongoose.Schema({
         type: String,
         default: 'https://meet.jit.si/lawbridge-' + Math.random().toString(36).substring(7),
     },
+    consultationType: {
+        type: String,
+        enum: ['Video', 'Audio', 'In-Person'],
+        default: 'Video',
+    },
+    subject: {
+        type: String,
+    },
+    notes: {
+        type: String,
+    },
+    rejectionReason: {
+        type: String,
+    },
     status: {
         type: String,
-        enum: ['Pending', 'Accepted', 'Rejected', 'Completed'],
+        enum: ['Pending', 'Accepted', 'Confirmed', 'Rejected', 'Completed'],
         default: 'Pending',
     },
     createdAt: {
